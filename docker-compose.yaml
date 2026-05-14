@@ -1,0 +1,19 @@
+services:
+  db:
+    container_name: primary_db
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./database/postgres-data:/var/lib/postgresql
+    environment:
+      POSTGRES_CONNECTION: "postgres://test:test@localhost:5432/test?sslmode=disable"
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
