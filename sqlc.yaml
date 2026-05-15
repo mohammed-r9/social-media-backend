@@ -1,0 +1,109 @@
+version: "2"
+
+sql:
+  - engine: "postgresql"
+    schema: "./migrations"
+    queries: "./internal/adapters/sqlc/queries"
+    gen:
+      go:
+        package: "repo"
+        out: "./internal/adapters/sqlc/repo"
+        sql_package: "database/sql"
+        sql_driver: "github.com/jackc/pgx/v5"
+        emit_json_tags: true
+        emit_interface: true
+
+        overrides:
+          # JSONB as json.RawMessage
+          - db_type: "jsonb"
+            go_type:
+              import: "encoding/json"
+              type: "RawMessage"
+
+          # JSON as json.RawMessage
+          - db_type: "json"
+            go_type:
+              import: "encoding/json"
+              type: "RawMessage"
+
+          # UUID non-nullable
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+
+          # UUID nullable
+          - db_type: "uuid"
+            nullable: true
+            go_type:
+              import: "github.com/google/uuid"
+              type: "UUID"
+              pointer: true
+
+          # Timestamp nullable
+          - db_type: "pg_catalog.timestamp"
+            nullable: true
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: true
+
+          # Timestamp non-nullable
+          - db_type: "pg_catalog.timestamp"
+            nullable: false
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: false
+
+          # Timestamptz nullable
+          - db_type: "pg_catalog.timestamptz"
+            nullable: true
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: true
+
+          # Timestamptz non-nullable
+          - db_type: "pg_catalog.timestamptz"
+            nullable: false
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: false
+
+          # timestamptz (unqualified)
+          - db_type: "timestamptz"
+            nullable: true
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: true
+
+          - db_type: "timestamptz"
+            nullable: false
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: false
+
+          # timestamp with time zone
+          - db_type: "timestamp with time zone"
+            nullable: true
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: true
+
+          - db_type: "timestamp with time zone"
+            nullable: false
+            go_type:
+              import: "time"
+              type: "Time"
+              pointer: false
+          # Hide sensitive columns
+          - column: "users.password_hash"
+            go_struct_tag: 'json:"-"'
+
+          - column: "users.salt"
+            go_struct_tag: 'json:"-"'

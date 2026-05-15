@@ -24,7 +24,6 @@ func (a *application) mount() {
 		c.Set("request_id", id)
 		c.Next()
 	})
-
 	a.router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
