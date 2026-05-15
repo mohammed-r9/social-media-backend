@@ -15,7 +15,7 @@ func (u *UserRepository) CreateUser(ctx context.Context, params user.CreateUserP
 	user, err := u.q.CreateUser(ctx, db.CreateUserParams{
 		ID:           params.ID,
 		Email:        params.Email,
-		PasswordHash: []byte(params.PassowrdHash), // maybe temp
+		PasswordHash: params.PassowrdHash,
 		Name:         params.Name,
 	})
 	_, _ = user, err

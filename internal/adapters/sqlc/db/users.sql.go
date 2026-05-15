@@ -23,7 +23,7 @@ type CreateUserParams struct {
 	ID           uuid.UUID `json:"id"`
 	Email        string    `json:"email"`
 	Name         string    `json:"name"`
-	PasswordHash []byte    `json:"-"`
+	PasswordHash string    `json:"-"`
 }
 
 type CreateUserRow struct {

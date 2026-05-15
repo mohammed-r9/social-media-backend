@@ -17,7 +17,7 @@ type User struct {
 	Phone        sql.NullString `json:"phone"`
 	Name         string         `json:"name"`
 	IsSuspended  bool           `json:"is_suspended"`
-	PasswordHash []byte         `json:"-"`
+	PasswordHash string         `json:"-"`
 	VerifiedAt   *time.Time     `json:"verified_at"`
 	CreatedAt    time.Time      `json:"created_at"`
 	UpdatedAt    time.Time      `json:"updated_at"`
