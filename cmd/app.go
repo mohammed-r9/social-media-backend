@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"social-media-backend/internal/adapters/sqlc/db"
+	"social-media-backend/internal/resources/user"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -35,6 +37,9 @@ func (a *application) mount() {
 	a.router.GET("/health", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "Status Is Available")
 	})
+
+	queries := db.New(a.db)
+	user.InitModule(queries, &a.router.RouterGroup)
 }
 
 func (a *application) run() error {

@@ -1,4 +1,4 @@
-package user
+package domain
 
 import "github.com/google/uuid"
 
@@ -6,5 +6,11 @@ type CreateUserParams struct {
 	ID           uuid.UUID
 	Email        string
 	Name         string
-	PassowrdHash string // temp
+	PasswordHash string // temp
+}
+
+type User struct {
+	ID    uuid.UUID
+	Email string
+	Name  string
 }

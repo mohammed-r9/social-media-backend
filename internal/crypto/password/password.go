@@ -4,7 +4,7 @@ import (
 	"github.com/alexedwards/argon2id"
 )
 
-var DefaultParams = &argon2id.Params{
+var defaultParams = &argon2id.Params{
 	Memory:      64 * 1024,
 	Iterations:  3,
 	Parallelism: 4,
@@ -12,13 +12,13 @@ var DefaultParams = &argon2id.Params{
 	SaltLength:  16,
 }
 
-func HashPassword(plainText string) (string, error) {
-	return argon2id.CreateHash(plainText, DefaultParams)
-}
-
 type ComparePasswordParams struct {
 	Password   string
 	StoredHash string
+}
+
+func HashPassword(plainText string) (string, error) {
+	return argon2id.CreateHash(plainText, defaultParams)
 }
 
 func ComparePassword(params ComparePasswordParams) (bool, error) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"social-media-backend/internal/database"
-	"social-media-backend/internal/shared/env"
+	"social-media-backend/internal/env"
 
 	"github.com/gin-gonic/gin"
 )

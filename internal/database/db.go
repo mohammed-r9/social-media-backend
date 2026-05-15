@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"social-media-backend/internal/shared/env"
+	"social-media-backend/internal/env"
 	"social-media-backend/migrations"
 	"time"
 
