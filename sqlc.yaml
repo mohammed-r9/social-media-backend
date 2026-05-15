@@ -6,8 +6,8 @@ sql:
     queries: "./internal/adapters/sqlc/queries"
     gen:
       go:
-        package: "repo"
-        out: "./internal/adapters/sqlc/repo"
+        package: "db"
+        out: "./internal/adapters/sqlc/db"
         sql_package: "database/sql"
         sql_driver: "github.com/jackc/pgx/v5"
         emit_json_tags: true
