@@ -5,7 +5,8 @@ import (
 	"log"
 	"net/http"
 	"social-media-backend/internal/adapters/sqlc/db"
-	"social-media-backend/internal/resources/user"
+	"social-media-backend/internal/resources/sessions"
+	"social-media-backend/internal/resources/users"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -39,7 +40,8 @@ func (a *application) mount() {
 	})
 
 	queries := db.New(a.db)
-	user.InitModule(queries, &a.router.RouterGroup)
+	users.InitModule(queries, &a.router.RouterGroup)
+	sessions.InitModule(queries, &a.router.RouterGroup)
 }
 
 func (a *application) run() error {

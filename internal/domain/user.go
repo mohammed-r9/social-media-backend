@@ -1,6 +1,17 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"errors"
+
+	"github.com/google/uuid"
+)
+
+var (
+	ErrUserNotFound       = errors.New("user not found")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrEmailAlreadyTaken  = errors.New("email already taken")
+	ErrInvalidUserID      = errors.New("invalid user id")
+)
 
 type CreateUserParams struct {
 	ID           uuid.UUID

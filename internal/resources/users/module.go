@@ -1,11 +1,11 @@
-package user
+package users
 
 import (
 	"net/http"
 	"social-media-backend/internal/adapters/sqlc/db"
-	handler "social-media-backend/internal/resources/user/internal/http"
-	"social-media-backend/internal/resources/user/internal/repository/postgres"
-	"social-media-backend/internal/resources/user/internal/service"
+	handler "social-media-backend/internal/resources/users/internal/http"
+	"social-media-backend/internal/resources/users/internal/repository/postgres"
+	"social-media-backend/internal/resources/users/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,4 +23,5 @@ func registerRoutes(h *handler.Handler, r gin.IRouter) {
 	r.GET("users/health", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "user status is available")
 	})
+	r.POST("/users", h.Register)
 }

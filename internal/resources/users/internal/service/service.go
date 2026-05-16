@@ -1,6 +1,6 @@
 package service
 
-import repo "social-media-backend/internal/resources/user/internal/repository"
+import repo "social-media-backend/internal/resources/users/internal/repository"
 
 type Service struct {
 	repo repo.UserRepository
