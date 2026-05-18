@@ -1,14 +1,24 @@
-package handler
+package network
 
 import (
 	"errors"
 	"log"
 	"net/http"
 	"social-media-backend/internal/domain"
-	"social-media-backend/internal/resources/users/internal/service"
+	"social-media-backend/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
+
+type UserHandler struct {
+	svc *service.UserService
+}
+
+func NewUserHandler(svc *service.UserService) *UserHandler {
+	return &UserHandler{
+		svc: svc,
+	}
+}
 
 type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
@@ -16,7 +26,7 @@ type createUserRequest struct {
 	Name     string `json:"name" binding:"required"`
 }
 
-func (h *Handler) Register(c *gin.Context) {
+func (h *UserHandler) Register(c *gin.Context) {
 	var req createUserRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {

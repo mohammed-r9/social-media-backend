@@ -10,17 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-type UserRepository struct {
-	q *db.Queries
-}
-
-func NewUserRepository(q *db.Queries) *UserRepository {
-	return &UserRepository{
-		q: q,
-	}
-}
-
-func (r *UserRepository) CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error) {
+func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error) {
 	user, err := r.q.CreateUser(ctx, db.CreateUserParams{
 		ID:           params.ID,
 		Email:        params.Email,

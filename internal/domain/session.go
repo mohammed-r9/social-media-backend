@@ -24,3 +24,6 @@ type CreateSessionParams struct {
 	CsrfTokenHash    string
 	ExpiresAt        time.Time
 }
+
+type SessionsRepository interface {
+}

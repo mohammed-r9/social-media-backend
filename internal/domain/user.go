@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"errors"
 
 	"github.com/google/uuid"
@@ -24,4 +25,8 @@ type User struct {
 	ID    uuid.UUID
 	Email string
 	Name  string
+}
+
+type UserRepository interface {
+	CreateUser(ctx context.Context, params CreateUserParams) (User, error)
 }

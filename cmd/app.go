@@ -5,8 +5,9 @@ import (
 	"log"
 	"net/http"
 	"social-media-backend/internal/adapters/sqlc/db"
-	"social-media-backend/internal/resources/sessions"
-	"social-media-backend/internal/resources/users"
+	"social-media-backend/internal/network"
+	"social-media-backend/internal/repo/postgres"
+	"social-media-backend/internal/service"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -40,8 +41,16 @@ func (a *application) mount() {
 	})
 
 	queries := db.New(a.db)
-	users.InitModule(queries, &a.router.RouterGroup)
-	sessions.InitModule(queries, &a.router.RouterGroup)
+
+	postgresRepo := postgres.NewPostgresRepository(queries)
+	userSvc := service.NewUserService(postgresRepo)
+	userHandler := network.NewUserHandler(userSvc)
+
+	// v1
+	{
+		v1 := a.router.Group("/api/v1")
+		network.RegisterUserRoutes(v1, userHandler)
+	}
 }
 
 func (a *application) run() error {

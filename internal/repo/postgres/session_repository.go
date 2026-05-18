@@ -8,17 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type SessionRepository struct {
-	q *db.Queries
-}
-
-func NewSessionRepository(q *db.Queries) *SessionRepository {
-	return &SessionRepository{
-		q: q,
-	}
-}
-
-func (r *SessionRepository) CreateSession(ctx context.Context, params domain.CreateSessionParams) (uuid.UUID, error) {
+func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSessionParams) (uuid.UUID, error) {
 	sessionID, err := r.q.CreateSession(ctx, db.CreateSessionParams{
 		ID:               params.ID,
 		UserID:           params.UserID,
