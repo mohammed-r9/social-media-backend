@@ -4,9 +4,8 @@ import (
 	"context"
 	"social-media-backend/internal/crypto/password"
 	"social-media-backend/internal/crypto/tokens/stateful"
+	"social-media-backend/internal/crypto/tokens/stateless"
 	"social-media-backend/internal/domain"
-
-	"github.com/google/uuid"
 )
 
 type AuthService struct {
@@ -22,8 +21,9 @@ func NewAuthService(userRepo domain.UserRepository, sessionRepo domain.SessionsR
 }
 
 type LoginParams struct {
-	Email    string
-	Password string
+	Email      string
+	Password   string
+	DeviceName string
 }
 
 func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.AuthTokens, error) {
@@ -52,7 +52,7 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 
 	tokens := stateful.GenerateSessionTokens()
 	storedHashes := tokens.ToHash()
-	sessionID, err := uuid.NewV7()
+	sessionID := domain.GenerateSessionID()
 
 	if err != nil {
 		return domain.AuthTokens{}, err
@@ -69,9 +69,15 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		return domain.AuthTokens{}, err
 	}
 
+	accessToken, err := stateless.GenerateAccessToken(user)
+	if err != nil {
+		return domain.AuthTokens{}, err
+	}
+
 	return domain.AuthTokens{
-		AccessToken:  "temp",
+		AccessToken:  accessToken,
 		RefreshToken: tokens.RefreshToken,
 		CsrfToken:    tokens.CsrfToken,
+		SessionID:    sessionID,
 	}, nil
 }

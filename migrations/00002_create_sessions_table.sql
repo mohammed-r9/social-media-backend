@@ -1,7 +1,7 @@
 -- +goose UP
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS sessions (
-    id UUID PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     refresh_token_hash TEXT UNIQUE NOT NULL,
     csrf_token_hash TEXT UNIQUE NOT NULL,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

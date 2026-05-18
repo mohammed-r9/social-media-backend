@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 )
 
-func generateOpaqueToken(length int) string {
+func GenerateOpaqueToken(length int) string {
 	randomByte := make([]byte, length)
 	rand.Read(randomByte)
 	return hex.EncodeToString(randomByte)

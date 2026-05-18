@@ -20,7 +20,7 @@ func (t *SessionTokens) ToHash() SessionTokenHashes {
 
 func GenerateSessionTokens() SessionTokens {
 	return SessionTokens{
-		RefreshToken: generateOpaqueToken(32),
-		CsrfToken:    generateOpaqueToken(32),
+		RefreshToken: GenerateOpaqueToken(32),
+		CsrfToken:    GenerateOpaqueToken(32),
 	}
 }

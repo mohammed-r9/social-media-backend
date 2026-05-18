@@ -20,7 +20,7 @@ RETURNING id, user_id, refresh_token_hash, csrf_token_hash, device_name, expires
 `
 
 type CreateSessionParams struct {
-	ID               uuid.UUID `json:"id"`
+	ID               string    `json:"id"`
 	UserID           uuid.UUID `json:"user_id"`
 	RefreshTokenHash string    `json:"refresh_token_hash"`
 	CsrfTokenHash    string    `json:"csrf_token_hash"`
@@ -29,7 +29,7 @@ type CreateSessionParams struct {
 }
 
 type CreateSessionRow struct {
-	ID               uuid.UUID  `json:"id"`
+	ID               string     `json:"id"`
 	UserID           uuid.UUID  `json:"user_id"`
 	RefreshTokenHash string     `json:"refresh_token_hash"`
 	CsrfTokenHash    string     `json:"csrf_token_hash"`

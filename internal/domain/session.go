@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"errors"
+	"social-media-backend/internal/crypto/tokens/stateful"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ var (
 )
 
 type Session struct {
-	ID               uuid.UUID
+	ID               string
 	UserID           uuid.UUID
 	DeviceName       string
 	RefreshTokenHash string
@@ -24,7 +25,7 @@ type Session struct {
 }
 
 type CreateSessionParams struct {
-	ID               uuid.UUID
+	ID               string
 	UserID           uuid.UUID
 	DeviceName       string
 	RefreshTokenHash string
@@ -36,6 +37,7 @@ type AuthTokens struct {
 	AccessToken  string
 	RefreshToken string
 	CsrfToken    string
+	SessionID    string
 }
 
 type SessionsRepository interface {
@@ -52,4 +54,8 @@ func (s *Session) ValidateSession() error {
 	}
 
 	return nil
+}
+
+func GenerateSessionID() string {
+	return stateful.GenerateOpaqueToken(24)
 }
