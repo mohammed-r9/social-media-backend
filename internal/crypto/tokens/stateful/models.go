@@ -1,6 +1,26 @@
 package stateful
 
-// SessionToken is used to refresh the access token
-// it acts as a session id and refresh token
-type SessionToken struct {
+type SessionTokens struct {
+	RefreshToken string
+	CsrfToken    string
+}
+
+type SessionTokenHashes struct {
+	RefreshHash string
+	CsrfHash    string
+}
+
+// HashTokens requires both RefreshToken and CsrfToken to be set before being called,
+func (t *SessionTokens) ToHash() SessionTokenHashes {
+	return SessionTokenHashes{
+		RefreshHash: hashToken(t.RefreshToken),
+		CsrfHash:    hashToken(t.CsrfToken),
+	}
+}
+
+func GenerateSessionTokens() SessionTokens {
+	return SessionTokens{
+		RefreshToken: generateOpaqueToken(32),
+		CsrfToken:    generateOpaqueToken(32),
+	}
 }

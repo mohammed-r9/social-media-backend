@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,7 +17,7 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (
 	id, email, name, password_hash 
 ) VALUES ( $1, $2, $3, $4 )
-RETURNING id, email, name, created_at
+RETURNING id, email, name, password_hash, verified_at, created_at, updated_at, is_suspended, phone
 `
 
 type CreateUserParams struct {
@@ -27,10 +28,15 @@ type CreateUserParams struct {
 }
 
 type CreateUserRow struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
+	ID           uuid.UUID      `json:"id"`
+	Email        string         `json:"email"`
+	Name         string         `json:"name"`
+	PasswordHash string         `json:"-"`
+	VerifiedAt   *time.Time     `json:"verified_at"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	IsSuspended  bool           `json:"is_suspended"`
+	Phone        sql.NullString `json:"phone"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
@@ -45,7 +51,47 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		&i.ID,
 		&i.Email,
 		&i.Name,
+		&i.PasswordHash,
+		&i.VerifiedAt,
 		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsSuspended,
+		&i.Phone,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, email, name, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
+FROM users
+WHERE email = $1
+`
+
+type GetUserByEmailRow struct {
+	ID           uuid.UUID      `json:"id"`
+	Email        string         `json:"email"`
+	Name         string         `json:"name"`
+	PasswordHash string         `json:"-"`
+	VerifiedAt   *time.Time     `json:"verified_at"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	IsSuspended  bool           `json:"is_suspended"`
+	Phone        sql.NullString `json:"phone"`
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i GetUserByEmailRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Name,
+		&i.PasswordHash,
+		&i.VerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsSuspended,
+		&i.Phone,
 	)
 	return i, err
 }

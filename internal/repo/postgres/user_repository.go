@@ -2,13 +2,17 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/domain"
+	"social-media-backend/internal/utils"
 
 	"github.com/jackc/pgx/v5/pgconn"
 )
+
+var _ domain.UserRepository = (*PostgresRepo)(nil)
 
 func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error) {
 	user, err := r.q.CreateUser(ctx, db.CreateUserParams{
@@ -29,8 +33,33 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserP
 	}
 
 	return domain.User{
-		ID:    user.ID,
-		Email: user.Email,
-		Name:  user.Name,
+		ID:           user.ID,
+		Email:        user.Email,
+		Name:         user.Name,
+		Phone:        utils.NullStringToString(user.Phone),
+		PasswordHash: user.PasswordHash,
+		IsSuspended:  user.IsSuspended,
+		VerifiedAt:   user.VerifiedAt,
+	}, nil
+}
+
+func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
+	if email == "" {
+		return domain.User{}, domain.ErrInvalidUserEmail
+	}
+
+	user, err := r.q.GetUserByEmail(ctx, email)
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.User{}, domain.ErrUserNotFound
+	}
+
+	return domain.User{
+		ID:           user.ID,
+		Email:        user.Email,
+		Name:         user.Name,
+		Phone:        utils.NullStringToString(user.Phone),
+		PasswordHash: user.PasswordHash,
+		IsSuspended:  user.IsSuspended,
+		VerifiedAt:   user.VerifiedAt,
 	}, nil
 }

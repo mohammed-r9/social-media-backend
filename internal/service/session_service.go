@@ -1,6 +1,8 @@
 package service
 
-import "social-media-backend/internal/domain"
+import (
+	"social-media-backend/internal/domain"
+)
 
 type SessionService struct {
 	repo domain.SessionsRepository

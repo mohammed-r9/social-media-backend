@@ -4,12 +4,12 @@ import (
 	"context"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/domain"
-
-	"github.com/google/uuid"
 )
 
-func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSessionParams) (uuid.UUID, error) {
-	sessionID, err := r.q.CreateSession(ctx, db.CreateSessionParams{
+var _ domain.SessionsRepository = (*PostgresRepo)(nil)
+
+func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSessionParams) (domain.Session, error) {
+	session, err := r.q.CreateSession(ctx, db.CreateSessionParams{
 		ID:               params.ID,
 		UserID:           params.UserID,
 		RefreshTokenHash: params.RefreshTokenHash,
@@ -21,5 +21,13 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSe
 	// TODO: add error handling
 	_ = err
 
-	return sessionID, nil
+	return domain.Session{
+		ID:               session.ID,
+		UserID:           session.UserID,
+		RefreshTokenHash: session.RefreshTokenHash,
+		CsrfTokenHash:    session.CsrfTokenHash,
+		DeviceName:       session.DeviceName,
+		ExpiresAt:        session.ExpiresAt,
+		RevokedAt:        session.RevokedAt,
+	}, nil
 }

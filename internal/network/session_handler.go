@@ -2,12 +2,12 @@ package network
 
 import "social-media-backend/internal/service"
 
-type Handler struct {
+type SessionHandler struct {
 	svc *service.SessionService
 }
 
-func NewHandler(svc *service.SessionService) *Handler {
-	return &Handler{
+func NewHandler(svc *service.SessionService) *SessionHandler {
+	return &SessionHandler{
 		svc: svc,
 	}
 }

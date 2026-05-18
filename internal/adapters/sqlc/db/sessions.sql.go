@@ -16,7 +16,7 @@ const createSession = `-- name: CreateSession :one
 INSERT INTO sessions (
 	id, user_id, refresh_token_hash, csrf_token_hash, device_name, expires_at
 ) VALUES ( $1, $2, $3, $4, $5, $6 )
-RETURNING id
+RETURNING id, user_id, refresh_token_hash, csrf_token_hash, device_name, expires_at, revoked_at
 `
 
 type CreateSessionParams struct {
@@ -28,7 +28,17 @@ type CreateSessionParams struct {
 	ExpiresAt        time.Time `json:"expires_at"`
 }
 
-func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (uuid.UUID, error) {
+type CreateSessionRow struct {
+	ID               uuid.UUID  `json:"id"`
+	UserID           uuid.UUID  `json:"user_id"`
+	RefreshTokenHash string     `json:"refresh_token_hash"`
+	CsrfTokenHash    string     `json:"csrf_token_hash"`
+	DeviceName       string     `json:"device_name"`
+	ExpiresAt        time.Time  `json:"expires_at"`
+	RevokedAt        *time.Time `json:"revoked_at"`
+}
+
+func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (CreateSessionRow, error) {
 	row := q.db.QueryRowContext(ctx, createSession,
 		arg.ID,
 		arg.UserID,
@@ -37,7 +47,15 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (u
 		arg.DeviceName,
 		arg.ExpiresAt,
 	)
-	var id uuid.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i CreateSessionRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RefreshTokenHash,
+		&i.CsrfTokenHash,
+		&i.DeviceName,
+		&i.ExpiresAt,
+		&i.RevokedAt,
+	)
+	return i, err
 }
