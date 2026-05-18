@@ -6,7 +6,12 @@ import (
 	"social-media-backend/internal/domain"
 )
 
-var _ domain.SessionsRepository = (*PostgresRepo)(nil)
+type SessionsRepository interface {
+	CreateSession(context.Context, domain.CreateSessionParams) (domain.Session, error)
+	GetUserSession(context.Context, domain.GetUserSessionParams) (UserSessionDTO, error)
+}
+
+var _ SessionsRepository = (*PostgresRepo)(nil)
 
 func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSessionParams) (domain.Session, error) {
 	session, err := r.q.CreateSession(ctx, db.CreateSessionParams{
@@ -32,7 +37,7 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSe
 	}, nil
 }
 
-func (r *PostgresRepo) GetUserSession(ctx context.Context, params domain.GetUserSessionParams) (domain.Session, error) {
+func (r *PostgresRepo) GetUserSession(ctx context.Context, params domain.GetUserSessionParams) (UserSessionDTO, error) {
 	session, err := r.q.GetUserSession(ctx, db.GetUserSessionParams{
 		ID:     params.ID,
 		UserID: params.UserID,
@@ -41,13 +46,16 @@ func (r *PostgresRepo) GetUserSession(ctx context.Context, params domain.GetUser
 	// TODO: add error handling
 	_ = err
 
-	return domain.Session{
-		ID:               session.ID,
-		UserID:           session.UserID,
-		RefreshTokenHash: session.RefreshTokenHash,
-		CsrfTokenHash:    session.CsrfTokenHash,
-		DeviceName:       session.DeviceName,
-		ExpiresAt:        session.ExpiresAt,
-		RevokedAt:        session.RevokedAt,
+	return UserSessionDTO{
+		Session: domain.Session{
+			ID:               session.ID,
+			UserID:           session.UserID,
+			RefreshTokenHash: session.RefreshTokenHash,
+			CsrfTokenHash:    session.CsrfTokenHash,
+			DeviceName:       session.DeviceName,
+			ExpiresAt:        session.ExpiresAt,
+			RevokedAt:        session.RevokedAt,
+		},
+		VerifiedAt: session.VerifiedAt,
 	}, nil
 }

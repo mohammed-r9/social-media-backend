@@ -12,7 +12,12 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-var _ domain.UserRepository = (*PostgresRepo)(nil)
+type UserRepository interface {
+	CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error)
+	GetUserByEmail(ctx context.Context, email string) (domain.User, error)
+}
+
+var _ UserRepository = (*PostgresRepo)(nil)
 
 func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error) {
 	user, err := r.q.CreateUser(ctx, db.CreateUserParams{

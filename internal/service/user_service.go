@@ -4,15 +4,16 @@ import (
 	"context"
 	"social-media-backend/internal/crypto/password"
 	"social-media-backend/internal/domain"
+	"social-media-backend/internal/repo/postgres"
 
 	"github.com/google/uuid"
 )
 
 type UserService struct {
-	repo domain.UserRepository
+	repo postgres.UserRepository
 }
 
-func NewUserService(repo domain.UserRepository) *UserService {
+func NewUserService(repo postgres.UserRepository) *UserService {
 	return &UserService{
 		repo: repo,
 	}
@@ -41,4 +42,3 @@ func (s *UserService) Register(ctx context.Context, params RegisterParams) (doma
 		PasswordHash: passowrdHash,
 	})
 }
-

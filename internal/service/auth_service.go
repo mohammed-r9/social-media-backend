@@ -6,16 +6,18 @@ import (
 	"social-media-backend/internal/crypto/tokens/stateful"
 	"social-media-backend/internal/crypto/tokens/stateless"
 	"social-media-backend/internal/domain"
+	"social-media-backend/internal/repo/postgres"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type AuthService struct {
-	userRepo    domain.UserRepository
-	sessionRepo domain.SessionsRepository
+	userRepo    postgres.UserRepository
+	sessionRepo postgres.SessionsRepository
 }
 
-func NewAuthService(userRepo domain.UserRepository, sessionRepo domain.SessionsRepository) *AuthService {
+func NewAuthService(userRepo postgres.UserRepository, sessionRepo postgres.SessionsRepository) *AuthService {
 	return &AuthService{
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
@@ -101,7 +103,13 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		return "", err
 	}
 
-	err = session.ValidateSession()
+	if time.Now().After(session.Session.ExpiresAt) {
+		return "", domain.ErrSessionExpired
+	}
+
+	if session.Session.RevokedAt != nil {
+		return "", domain.ErrSessionRevoked
+	}
 
 	if err != nil {
 		return "", err
@@ -109,7 +117,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 
 	isValid := stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
 		PlainText:  params.RefreshToken,
-		StoredHash: session.RefreshTokenHash,
+		StoredHash: session.Session.RefreshTokenHash,
 	})
 	if !isValid {
 		return "", domain.ErrInvalidToken
@@ -117,13 +125,15 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 
 	isValid = stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
 		PlainText:  params.CsrfToken,
-		StoredHash: session.CsrfTokenHash,
+		StoredHash: session.Session.CsrfTokenHash,
 	})
 
 	if !isValid {
 		return "", domain.ErrInvalidToken
 	}
 
-	// stateless.GenerateAccessToken()
-	return "", nil
+	return stateless.GenerateAccessToken(domain.User{
+		ID:         params.UserID,
+		VerifiedAt: session.VerifiedAt,
+	})
 }

@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"context"
 	"errors"
 	"social-media-backend/internal/crypto/tokens/stateful"
 	"time"
@@ -45,11 +44,6 @@ type AuthTokens struct {
 	RefreshToken string
 	CsrfToken    string
 	SessionID    string
-}
-
-type SessionsRepository interface {
-	CreateSession(context.Context, CreateSessionParams) (Session, error)
-	GetUserSession(context.Context, GetUserSessionParams) (Session, error)
 }
 
 func (s *Session) ValidateSession() error {

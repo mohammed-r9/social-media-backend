@@ -28,7 +28,6 @@ type createUserRequest struct {
 
 func (h *UserHandler) Register(c *gin.Context) {
 	var req createUserRequest
-
 	if err := c.ShouldBindJSON(&req); err != nil {
 		log.Printf("error binding request body: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{

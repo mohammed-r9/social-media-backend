@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"context"
 	"errors"
 	"time"
 
@@ -32,9 +31,4 @@ type User struct {
 	PasswordHash string
 	IsSuspended  bool
 	VerifiedAt   *time.Time
-}
-
-type UserRepository interface {
-	CreateUser(ctx context.Context, params CreateUserParams) (User, error)
-	GetUserByEmail(ctx context.Context, email string) (User, error)
 }

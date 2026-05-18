@@ -61,9 +61,18 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (C
 }
 
 const getUserSession = `-- name: GetUserSession :one
-SELECT id, user_id, refresh_token_hash, csrf_token_hash, device_name, expires_at, revoked_at 
-FROM sessions
-WHERE id = $1 AND user_id = $2
+SELECT 
+    s.id,
+    s.user_id,
+    s.refresh_token_hash,
+    s.csrf_token_hash,
+    s.device_name,
+    s.expires_at,
+    s.revoked_at,
+	u.verified_at
+FROM sessions s
+JOIN users u ON u.id = s.user_id
+WHERE s.id = $1 AND s.user_id = $2
 `
 
 type GetUserSessionParams struct {
@@ -79,6 +88,7 @@ type GetUserSessionRow struct {
 	DeviceName       string     `json:"device_name"`
 	ExpiresAt        time.Time  `json:"expires_at"`
 	RevokedAt        *time.Time `json:"revoked_at"`
+	VerifiedAt       *time.Time `json:"verified_at"`
 }
 
 func (q *Queries) GetUserSession(ctx context.Context, arg GetUserSessionParams) (GetUserSessionRow, error) {
@@ -92,6 +102,7 @@ func (q *Queries) GetUserSession(ctx context.Context, arg GetUserSessionParams) 
 		&i.DeviceName,
 		&i.ExpiresAt,
 		&i.RevokedAt,
+		&i.VerifiedAt,
 	)
 	return i, err
 }
