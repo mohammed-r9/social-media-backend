@@ -59,3 +59,39 @@ func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (C
 	)
 	return i, err
 }
+
+const getUserSession = `-- name: GetUserSession :one
+SELECT id, user_id, refresh_token_hash, csrf_token_hash, device_name, expires_at, revoked_at 
+FROM sessions
+WHERE id = $1 AND user_id = $2
+`
+
+type GetUserSessionParams struct {
+	ID     string    `json:"id"`
+	UserID uuid.UUID `json:"user_id"`
+}
+
+type GetUserSessionRow struct {
+	ID               string     `json:"id"`
+	UserID           uuid.UUID  `json:"user_id"`
+	RefreshTokenHash string     `json:"refresh_token_hash"`
+	CsrfTokenHash    string     `json:"csrf_token_hash"`
+	DeviceName       string     `json:"device_name"`
+	ExpiresAt        time.Time  `json:"expires_at"`
+	RevokedAt        *time.Time `json:"revoked_at"`
+}
+
+func (q *Queries) GetUserSession(ctx context.Context, arg GetUserSessionParams) (GetUserSessionRow, error) {
+	row := q.db.QueryRowContext(ctx, getUserSession, arg.ID, arg.UserID)
+	var i GetUserSessionRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.RefreshTokenHash,
+		&i.CsrfTokenHash,
+		&i.DeviceName,
+		&i.ExpiresAt,
+		&i.RevokedAt,
+	)
+	return i, err
+}

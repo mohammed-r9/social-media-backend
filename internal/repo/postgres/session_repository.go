@@ -31,3 +31,23 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSe
 		RevokedAt:        session.RevokedAt,
 	}, nil
 }
+
+func (r *PostgresRepo) GetUserSession(ctx context.Context, params domain.GetUserSessionParams) (domain.Session, error) {
+	session, err := r.q.GetUserSession(ctx, db.GetUserSessionParams{
+		ID:     params.ID,
+		UserID: params.UserID,
+	})
+
+	// TODO: add error handling
+	_ = err
+
+	return domain.Session{
+		ID:               session.ID,
+		UserID:           session.UserID,
+		RefreshTokenHash: session.RefreshTokenHash,
+		CsrfTokenHash:    session.CsrfTokenHash,
+		DeviceName:       session.DeviceName,
+		ExpiresAt:        session.ExpiresAt,
+		RevokedAt:        session.RevokedAt,
+	}, nil
+}

@@ -20,4 +20,3 @@ type AccessTokenClaims struct {
 	IsEmailVerified bool
 	// maybe I need more fields? idk
 }
-

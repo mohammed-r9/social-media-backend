@@ -12,8 +12,10 @@ import (
 var (
 	ErrSessionExpired = errors.New("session is expired")
 	ErrSessionRevoked = errors.New("session is revoked")
+	ErrInvalidToken   = errors.New("token is invalid")
 )
 
+// TODO: I need to find a way to embed some user field here without breaking the design
 type Session struct {
 	ID               string
 	UserID           uuid.UUID
@@ -33,6 +35,11 @@ type CreateSessionParams struct {
 	ExpiresAt        time.Time
 }
 
+type GetUserSessionParams struct {
+	ID     string
+	UserID uuid.UUID
+}
+
 type AuthTokens struct {
 	AccessToken  string
 	RefreshToken string
@@ -42,6 +49,7 @@ type AuthTokens struct {
 
 type SessionsRepository interface {
 	CreateSession(context.Context, CreateSessionParams) (Session, error)
+	GetUserSession(context.Context, GetUserSessionParams) (Session, error)
 }
 
 func (s *Session) ValidateSession() error {

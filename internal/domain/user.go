@@ -9,11 +9,12 @@ import (
 )
 
 var (
-	ErrUserNotFound       = errors.New("user not found")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrEmailAlreadyTaken  = errors.New("email already taken")
-	ErrInvalidUserID      = errors.New("invalid user id")
-	ErrInvalidUserEmail   = errors.New("invalid user email")
+	ErrUserNotFound        = errors.New("user not found")
+	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrEmailAlreadyTaken   = errors.New("email already taken")
+	ErrInvalidUserID       = errors.New("invalid user id")
+	ErrInvalidUserEmail    = errors.New("invalid user email")
+	ErrUnverifiedUserEmail = errors.New("unverified user email")
 )
 
 type CreateUserParams struct {

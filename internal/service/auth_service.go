@@ -6,6 +6,8 @@ import (
 	"social-media-backend/internal/crypto/tokens/stateful"
 	"social-media-backend/internal/crypto/tokens/stateless"
 	"social-media-backend/internal/domain"
+
+	"github.com/google/uuid"
 )
 
 type AuthService struct {
@@ -80,4 +82,48 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		CsrfToken:    tokens.CsrfToken,
 		SessionID:    sessionID,
 	}, nil
+}
+
+type RefreshParams struct {
+	RefreshToken string
+	CsrfToken    string
+	SessionID    string
+	UserID       uuid.UUID
+}
+
+func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshParams) (string, error) {
+	session, err := s.sessionRepo.GetUserSession(ctx, domain.GetUserSessionParams{
+		ID:     params.SessionID,
+		UserID: params.UserID,
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	err = session.ValidateSession()
+
+	if err != nil {
+		return "", err
+	}
+
+	isValid := stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
+		PlainText:  params.RefreshToken,
+		StoredHash: session.RefreshTokenHash,
+	})
+	if !isValid {
+		return "", domain.ErrInvalidToken
+	}
+
+	isValid = stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
+		PlainText:  params.CsrfToken,
+		StoredHash: session.CsrfTokenHash,
+	})
+
+	if !isValid {
+		return "", domain.ErrInvalidToken
+	}
+
+	// stateless.GenerateAccessToken()
+	return "", nil
 }
