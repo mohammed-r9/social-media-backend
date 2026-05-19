@@ -7,10 +7,10 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -28,19 +28,19 @@ type CreateUserParams struct {
 }
 
 type CreateUserRow struct {
-	ID           uuid.UUID      `json:"id"`
-	Email        string         `json:"email"`
-	Name         string         `json:"name"`
-	PasswordHash string         `json:"-"`
-	VerifiedAt   *time.Time     `json:"verified_at"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	IsSuspended  bool           `json:"is_suspended"`
-	Phone        sql.NullString `json:"phone"`
+	ID           uuid.UUID   `json:"id"`
+	Email        string      `json:"email"`
+	Name         string      `json:"name"`
+	PasswordHash string      `json:"-"`
+	VerifiedAt   *time.Time  `json:"verified_at"`
+	CreatedAt    time.Time   `json:"created_at"`
+	UpdatedAt    time.Time   `json:"updated_at"`
+	IsSuspended  bool        `json:"is_suspended"`
+	Phone        pgtype.Text `json:"phone"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
+	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.Email,
 		arg.Name,
@@ -68,19 +68,19 @@ WHERE email = $1
 `
 
 type GetUserByEmailRow struct {
-	ID           uuid.UUID      `json:"id"`
-	Email        string         `json:"email"`
-	Name         string         `json:"name"`
-	PasswordHash string         `json:"-"`
-	VerifiedAt   *time.Time     `json:"verified_at"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
-	IsSuspended  bool           `json:"is_suspended"`
-	Phone        sql.NullString `json:"phone"`
+	ID           uuid.UUID   `json:"id"`
+	Email        string      `json:"email"`
+	Name         string      `json:"name"`
+	PasswordHash string      `json:"-"`
+	VerifiedAt   *time.Time  `json:"verified_at"`
+	CreatedAt    time.Time   `json:"created_at"`
+	UpdatedAt    time.Time   `json:"updated_at"`
+	IsSuspended  bool        `json:"is_suspended"`
+	Phone        pgtype.Text `json:"phone"`
 }
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i GetUserByEmailRow
 	err := row.Scan(
 		&i.ID,

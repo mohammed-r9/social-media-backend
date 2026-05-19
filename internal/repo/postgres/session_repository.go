@@ -2,9 +2,13 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/domain"
 	"time"
+
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type SessionsRepository interface {
@@ -23,9 +27,22 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSe
 		DeviceName:       params.DeviceName,
 		ExpiresAt:        params.ExpiresAt,
 	})
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			// unique_violation
+			case "23505":
+				return domain.Session{}, domain.ErrSessionAlreadyExists
 
-	// TODO: add error handling
-	_ = err
+			// foreign_key_violation
+			case "23503":
+				return domain.Session{}, domain.ErrUserNotFound
+			}
+		}
+
+		return domain.Session{}, err
+	}
 
 	return domain.Session{
 		ID:               session.ID,
@@ -43,9 +60,13 @@ func (r *PostgresRepo) GetUserSession(ctx context.Context, params domain.GetUser
 		ID:     params.ID,
 		UserID: params.UserID,
 	})
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return UserSessionDTO{}, domain.ErrSessionNotFound
+		}
 
-	// TODO: add error handling
-	_ = err
+		return UserSessionDTO{}, err
+	}
 
 	return UserSessionDTO{
 		Session: domain.Session{

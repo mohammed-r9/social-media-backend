@@ -39,7 +39,7 @@ type CreateSessionRow struct {
 }
 
 func (q *Queries) CreateSession(ctx context.Context, arg CreateSessionParams) (CreateSessionRow, error) {
-	row := q.db.QueryRowContext(ctx, createSession,
+	row := q.db.QueryRow(ctx, createSession,
 		arg.ID,
 		arg.UserID,
 		arg.RefreshTokenHash,
@@ -92,7 +92,7 @@ type GetUserSessionRow struct {
 }
 
 func (q *Queries) GetUserSession(ctx context.Context, arg GetUserSessionParams) (GetUserSessionRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserSession, arg.ID, arg.UserID)
+	row := q.db.QueryRow(ctx, getUserSession, arg.ID, arg.UserID)
 	var i GetUserSessionRow
 	err := row.Scan(
 		&i.ID,

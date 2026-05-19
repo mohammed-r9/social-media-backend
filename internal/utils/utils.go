@@ -1,8 +1,8 @@
 package utils
 
-import "database/sql"
+import "github.com/jackc/pgx/v5/pgtype"
 
-func NullStringToString(ns sql.NullString) string {
+func NullStringToString(ns pgtype.Text) string {
 	if ns.Valid {
 		return ns.String
 	}

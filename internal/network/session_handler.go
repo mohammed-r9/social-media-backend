@@ -6,7 +6,7 @@ type SessionHandler struct {
 	svc *service.SessionService
 }
 
-func NewHandler(svc *service.SessionService) *SessionHandler {
+func NewSessionHandler(svc *service.SessionService) *SessionHandler {
 	return &SessionHandler{
 		svc: svc,
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"social-media-backend/internal/adapters/sqlc/db"
@@ -13,12 +12,13 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type application struct {
 	router *gin.Engine
 	addr   string
-	db     *sql.DB
+	db     *pgxpool.Pool
 }
 
 func (a *application) mount() {
@@ -45,7 +45,6 @@ func (a *application) mount() {
 	postgresRepo := postgres.NewPostgresRepository(queries)
 	userSvc := service.NewUserService(postgresRepo)
 	userHandler := network.NewUserHandler(userSvc)
-
 	authSvc := service.NewAuthService(postgresRepo, postgresRepo)
 	authHandler := network.NewAuthHandler(authSvc)
 

@@ -5,10 +5,10 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Session struct {
@@ -24,13 +24,13 @@ type Session struct {
 }
 
 type User struct {
-	ID           uuid.UUID      `json:"id"`
-	Email        string         `json:"email"`
-	Phone        sql.NullString `json:"phone"`
-	Name         string         `json:"name"`
-	IsSuspended  bool           `json:"is_suspended"`
-	PasswordHash string         `json:"-"`
-	VerifiedAt   *time.Time     `json:"verified_at"`
-	CreatedAt    time.Time      `json:"created_at"`
-	UpdatedAt    time.Time      `json:"updated_at"`
+	ID           uuid.UUID   `json:"id"`
+	Email        string      `json:"email"`
+	Phone        pgtype.Text `json:"phone"`
+	Name         string      `json:"name"`
+	IsSuspended  bool        `json:"is_suspended"`
+	PasswordHash string      `json:"-"`
+	VerifiedAt   *time.Time  `json:"verified_at"`
+	CreatedAt    time.Time   `json:"created_at"`
+	UpdatedAt    time.Time   `json:"updated_at"`
 }

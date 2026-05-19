@@ -14,6 +14,9 @@ var (
 	ErrInvalidUserID       = errors.New("invalid user id")
 	ErrInvalidUserEmail    = errors.New("invalid user email")
 	ErrUnverifiedUserEmail = errors.New("unverified user email")
+	ErrInvalidPassword     = errors.New("invalid user password")
+	ErrInvalidUserName     = errors.New("invalid user name")
+	ErrInvalidUsername     = errors.New("invalid username")
 )
 
 type CreateUserParams struct {

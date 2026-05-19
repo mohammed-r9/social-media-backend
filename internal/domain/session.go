@@ -9,9 +9,11 @@ import (
 )
 
 var (
-	ErrSessionExpired = errors.New("session is expired")
-	ErrSessionRevoked = errors.New("session is revoked")
-	ErrInvalidToken   = errors.New("token is invalid")
+	ErrSessionExpired       = errors.New("session is expired")
+	ErrSessionRevoked       = errors.New("session is revoked")
+	ErrInvalidToken         = errors.New("token is invalid")
+	ErrSessionAlreadyExists = errors.New("session already exists")
+	ErrSessionNotFound      = errors.New("session not found")
 )
 
 // TODO: I need to find a way to embed some user field here without breaking the design

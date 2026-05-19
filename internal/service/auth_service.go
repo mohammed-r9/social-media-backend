@@ -31,6 +31,18 @@ type LoginParams struct {
 }
 
 func (s *AuthService) Register(ctx context.Context, params RegisterParams) (domain.User, error) {
+	if params.PassowrdPlainText == "" {
+		return domain.User{}, domain.ErrInvalidPassword
+	}
+
+	if params.Email == "" {
+		return domain.User{}, domain.ErrInvalidUserEmail
+	}
+
+	if params.Name == "" {
+		return domain.User{}, domain.ErrInvalidUserName
+	}
+
 	passowrdHash, err := password.HashPassword(params.PassowrdPlainText)
 	if err != nil {
 		return domain.User{}, err

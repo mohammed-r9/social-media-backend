@@ -46,6 +46,7 @@ require (
 	github.com/quic-go/quic-go v0.59.1 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
+	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/valyala/fastjson v1.6.10 // indirect
