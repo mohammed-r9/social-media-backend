@@ -4,6 +4,7 @@ import (
 	"context"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/domain"
+	"time"
 )
 
 type SessionsRepository interface {
@@ -56,6 +57,8 @@ func (r *PostgresRepo) GetUserSession(ctx context.Context, params domain.GetUser
 			ExpiresAt:        session.ExpiresAt,
 			RevokedAt:        session.RevokedAt,
 		},
-		VerifiedAt: session.VerifiedAt,
+		User: struct{ VerifiedAt *time.Time }{
+			VerifiedAt: session.VerifiedAt,
+		},
 	}, nil
 }

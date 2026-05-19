@@ -46,10 +46,14 @@ func (a *application) mount() {
 	userSvc := service.NewUserService(postgresRepo)
 	userHandler := network.NewUserHandler(userSvc)
 
+	authSvc := service.NewAuthService(postgresRepo, postgresRepo)
+	authHandler := network.NewAuthHandler(authSvc)
+
 	// v1
 	{
 		v1 := a.router.Group("/api/v1")
 		network.RegisterUserRoutes(v1, userHandler)
+		network.RegisterAuthRoutes(v1, authHandler)
 	}
 }
 

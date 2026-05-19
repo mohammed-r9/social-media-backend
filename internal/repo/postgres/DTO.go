@@ -6,6 +6,8 @@ import (
 )
 
 type UserSessionDTO struct {
-	Session    domain.Session
-	VerifiedAt *time.Time
+	Session domain.Session
+	User    struct {
+		VerifiedAt *time.Time
+	}
 }

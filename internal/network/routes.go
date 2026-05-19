@@ -5,6 +5,13 @@ import "github.com/gin-gonic/gin"
 func RegisterUserRoutes(r *gin.RouterGroup, h *UserHandler) {
 	users := r.Group("/users")
 	{
-		users.POST("", h.Register)
+		_ = users
+	}
+}
+
+func RegisterAuthRoutes(r *gin.RouterGroup, h *AuthHandler) {
+	auth := r.Group("/auth")
+	{
+		auth.POST("register", h.Register)
 	}
 }

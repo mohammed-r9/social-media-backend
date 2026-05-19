@@ -30,6 +30,24 @@ type LoginParams struct {
 	DeviceName string
 }
 
+func (s *AuthService) Register(ctx context.Context, params RegisterParams) (domain.User, error) {
+	passowrdHash, err := password.HashPassword(params.PassowrdPlainText)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	userID, err := uuid.NewV7()
+	if err != nil {
+		return domain.User{}, err
+	}
+	return s.userRepo.CreateUser(ctx, domain.CreateUserParams{
+		ID:           userID,
+		Name:         params.Name,
+		Email:        params.Email,
+		PasswordHash: passowrdHash,
+	})
+}
+
 func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.AuthTokens, error) {
 	if params.Email == "" || params.Password == "" {
 		return domain.AuthTokens{}, domain.ErrInvalidCredentials
@@ -57,10 +75,6 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 	tokens := stateful.GenerateSessionTokens()
 	storedHashes := tokens.ToHash()
 	sessionID := domain.GenerateSessionID()
-
-	if err != nil {
-		return domain.AuthTokens{}, err
-	}
 
 	_, err = s.sessionRepo.CreateSession(ctx, domain.CreateSessionParams{
 		ID:               sessionID,
@@ -94,7 +108,7 @@ type RefreshParams struct {
 }
 
 func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshParams) (string, error) {
-	session, err := s.sessionRepo.GetUserSession(ctx, domain.GetUserSessionParams{
+	dto, err := s.sessionRepo.GetUserSession(ctx, domain.GetUserSessionParams{
 		ID:     params.SessionID,
 		UserID: params.UserID,
 	})
@@ -103,21 +117,17 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		return "", err
 	}
 
-	if time.Now().After(session.Session.ExpiresAt) {
+	if time.Now().After(dto.Session.ExpiresAt) {
 		return "", domain.ErrSessionExpired
 	}
 
-	if session.Session.RevokedAt != nil {
+	if dto.Session.RevokedAt != nil {
 		return "", domain.ErrSessionRevoked
-	}
-
-	if err != nil {
-		return "", err
 	}
 
 	isValid := stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
 		PlainText:  params.RefreshToken,
-		StoredHash: session.Session.RefreshTokenHash,
+		StoredHash: dto.Session.RefreshTokenHash,
 	})
 	if !isValid {
 		return "", domain.ErrInvalidToken
@@ -125,7 +135,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 
 	isValid = stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
 		PlainText:  params.CsrfToken,
-		StoredHash: session.Session.CsrfTokenHash,
+		StoredHash: dto.Session.CsrfTokenHash,
 	})
 
 	if !isValid {
@@ -134,6 +144,6 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 
 	return stateless.GenerateAccessToken(domain.User{
 		ID:         params.UserID,
-		VerifiedAt: session.VerifiedAt,
+		VerifiedAt: dto.User.VerifiedAt,
 	})
 }
