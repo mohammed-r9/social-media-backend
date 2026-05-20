@@ -1,10 +1,15 @@
 -- name: CreateUser :one
 INSERT INTO users (
-	id, email, name, password_hash 
-) VALUES ( @id, @email, @name, @password_hash )
-RETURNING id, email, name, password_hash, verified_at, created_at, updated_at, is_suspended, phone;
+	id, email, name, password_hash, username 
+) VALUES ( @id, @email, @name, @password_hash, @username )
+RETURNING id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone;
 
 -- name: GetUserByEmail :one
-SELECT id, email, name, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
+SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
 FROM users
 WHERE email = @email;
+
+-- name: UpdateUserPassword :execrows
+UPDATE users
+	SET password_hash = @password_hash
+	WHERE id = @id;

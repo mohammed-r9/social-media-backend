@@ -17,18 +17,26 @@ var (
 	ErrInvalidPassword     = errors.New("invalid user password")
 	ErrInvalidUserName     = errors.New("invalid user name")
 	ErrInvalidUsername     = errors.New("invalid username")
+	ErrNoRowsAffected      = errors.New("no rows affected")
 )
 
 type CreateUserParams struct {
 	ID           uuid.UUID
 	Email        string
 	Name         string
-	PasswordHash string // temp
+	Username     string
+	PasswordHash string
+}
+
+type UpdatePasswordParams struct {
+	ID           uuid.UUID
+	PasswordHash string
 }
 
 type User struct {
 	ID           uuid.UUID
 	Email        string
+	Username     string
 	Name         string
 	Phone        string
 	PasswordHash string

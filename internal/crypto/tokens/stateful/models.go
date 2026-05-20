@@ -1,5 +1,11 @@
 package stateful
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 type SessionTokens struct {
 	RefreshToken string
 	CsrfToken    string
@@ -23,4 +29,24 @@ func GenerateSessionTokens() SessionTokens {
 		RefreshToken: GenerateOpaqueToken(32),
 		CsrfToken:    GenerateOpaqueToken(32),
 	}
+}
+
+type TokenScope string
+
+const (
+	ScopePasswordReset     TokenScope = "password_reset"
+	ScopeEmailVerification TokenScope = "email_verification"
+)
+
+const (
+	PASSWORD_RESET_TTL     = time.Minute * 30
+	EMAIL_VERIFICATION_TTL = time.Hour * 2
+)
+
+type ShortLivedToken struct {
+	UserID uuid.UUID  `json:"user_id"`
+	Scope  TokenScope `json:"scope"`
+	Ttl    time.Duration
+	Raw    string
+	Hash   string
 }

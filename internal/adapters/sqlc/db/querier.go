@@ -13,6 +13,7 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error)
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserSession(ctx context.Context, arg GetUserSessionParams) (GetUserSessionRow, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (int64, error)
 }
 
 var _ Querier = (*Queries)(nil)

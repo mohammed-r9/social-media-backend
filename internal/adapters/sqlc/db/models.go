@@ -26,6 +26,7 @@ type Session struct {
 type User struct {
 	ID           uuid.UUID   `json:"id"`
 	Email        string      `json:"email"`
+	Username     string      `json:"username"`
 	Phone        pgtype.Text `json:"phone"`
 	Name         string      `json:"name"`
 	IsSuspended  bool        `json:"is_suspended"`

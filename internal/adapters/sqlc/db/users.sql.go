@@ -15,9 +15,9 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-	id, email, name, password_hash 
-) VALUES ( $1, $2, $3, $4 )
-RETURNING id, email, name, password_hash, verified_at, created_at, updated_at, is_suspended, phone
+	id, email, name, password_hash, username 
+) VALUES ( $1, $2, $3, $4, $5 )
+RETURNING id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone
 `
 
 type CreateUserParams struct {
@@ -25,12 +25,14 @@ type CreateUserParams struct {
 	Email        string    `json:"email"`
 	Name         string    `json:"name"`
 	PasswordHash string    `json:"-"`
+	Username     string    `json:"username"`
 }
 
 type CreateUserRow struct {
 	ID           uuid.UUID   `json:"id"`
 	Email        string      `json:"email"`
 	Name         string      `json:"name"`
+	Username     string      `json:"username"`
 	PasswordHash string      `json:"-"`
 	VerifiedAt   *time.Time  `json:"verified_at"`
 	CreatedAt    time.Time   `json:"created_at"`
@@ -45,12 +47,14 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 		arg.Email,
 		arg.Name,
 		arg.PasswordHash,
+		arg.Username,
 	)
 	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
 		&i.Name,
+		&i.Username,
 		&i.PasswordHash,
 		&i.VerifiedAt,
 		&i.CreatedAt,
@@ -62,7 +66,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
+SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
 FROM users
 WHERE email = $1
 `
@@ -71,6 +75,7 @@ type GetUserByEmailRow struct {
 	ID           uuid.UUID   `json:"id"`
 	Email        string      `json:"email"`
 	Name         string      `json:"name"`
+	Username     string      `json:"username"`
 	PasswordHash string      `json:"-"`
 	VerifiedAt   *time.Time  `json:"verified_at"`
 	CreatedAt    time.Time   `json:"created_at"`
@@ -86,6 +91,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 		&i.ID,
 		&i.Email,
 		&i.Name,
+		&i.Username,
 		&i.PasswordHash,
 		&i.VerifiedAt,
 		&i.CreatedAt,
@@ -94,4 +100,23 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 		&i.Phone,
 	)
 	return i, err
+}
+
+const updateUserPassword = `-- name: UpdateUserPassword :execrows
+UPDATE users
+	SET password_hash = $1
+	WHERE id = $2
+`
+
+type UpdateUserPasswordParams struct {
+	PasswordHash string    `json:"-"`
+	ID           uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (int64, error) {
+	result, err := q.db.Exec(ctx, updateUserPassword, arg.PasswordHash, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

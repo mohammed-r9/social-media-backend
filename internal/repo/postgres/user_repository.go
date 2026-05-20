@@ -25,6 +25,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserP
 		Email:        params.Email,
 		PasswordHash: params.PasswordHash,
 		Name:         params.Name,
+		Username:     params.Username,
 	})
 
 	if err != nil {
@@ -62,9 +63,22 @@ func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain
 		ID:           user.ID,
 		Email:        user.Email,
 		Name:         user.Name,
+		Username:     user.Username,
 		Phone:        utils.NullStringToString(user.Phone),
 		PasswordHash: user.PasswordHash,
 		IsSuspended:  user.IsSuspended,
 		VerifiedAt:   user.VerifiedAt,
 	}, nil
+}
+
+func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) error {
+	rowsAffected, err := r.q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+		ID:           params.ID,
+		PasswordHash: params.PasswordHash,
+	})
+
+	if rowsAffected == 0 {
+		return domain.ErrNoRowsAffected
+	}
+	return err
 }

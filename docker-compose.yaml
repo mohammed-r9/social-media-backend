@@ -17,3 +17,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  redis:
+    image: redis:latest
+    command: redis-server --requirepass test
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./database/redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "bruh", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
