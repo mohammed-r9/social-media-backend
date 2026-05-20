@@ -14,15 +14,24 @@ func GenerateOpaqueToken(length int) string {
 	return hex.EncodeToString(randomByte)
 }
 
-func NewShortLivedToken(userID uuid.UUID, scope TokenScope, ttl time.Duration) ShortLivedToken {
+func newShortLivedToken(userID uuid.UUID, scope TokenScope, ttl time.Duration) ShortLivedToken {
 	raw := GenerateOpaqueToken(32)
-	hash := hashToken(raw)
+	hash := HashToken(raw)
 
 	return ShortLivedToken{
-		UserID: userID,
-		Scope:  scope,
-		Ttl:    ttl,
-		Raw:    raw,
-		Hash:   hash,
+		UserID:    userID,
+		Scope:     scope,
+		Ttl:       ttl,
+		Raw:       raw,
+		Hash:      hash,
+		ExpiresAt: time.Now().Add(ttl),
 	}
+}
+
+func GenerateEmailVerificationToken(userID uuid.UUID) ShortLivedToken {
+	return newShortLivedToken(userID, ScopeEmailVerification, EMAIL_VERIFICATION_TTL)
+}
+
+func GeneratePasswordResetToken(userID uuid.UUID) ShortLivedToken {
+	return newShortLivedToken(userID, ScopePasswordReset, PASSWORD_RESET_TTL)
 }

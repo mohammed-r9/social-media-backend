@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrTokenNotFound = errors.New("token not found")
+	ErrExpiredToken  = errors.New("token not found")
 )
 
 type StoreTokenParam struct {

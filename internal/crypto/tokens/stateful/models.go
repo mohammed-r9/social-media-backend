@@ -19,8 +19,8 @@ type SessionTokenHashes struct {
 // HashTokens requires both RefreshToken and CsrfToken to be set before being called,
 func (t *SessionTokens) ToHash() SessionTokenHashes {
 	return SessionTokenHashes{
-		RefreshHash: hashToken(t.RefreshToken),
-		CsrfHash:    hashToken(t.CsrfToken),
+		RefreshHash: HashToken(t.RefreshToken),
+		CsrfHash:    HashToken(t.CsrfToken),
 	}
 }
 
@@ -44,9 +44,10 @@ const (
 )
 
 type ShortLivedToken struct {
-	UserID uuid.UUID  `json:"user_id"`
-	Scope  TokenScope `json:"scope"`
-	Ttl    time.Duration
-	Raw    string
-	Hash   string
+	UserID    uuid.UUID  `json:"user_id"`
+	Scope     TokenScope `json:"scope"`
+	ExpiresAt time.Time  `json:"expires_at"`
+	Ttl       time.Duration
+	Raw       string
+	Hash      string
 }

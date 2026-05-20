@@ -24,6 +24,7 @@ type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 	Name     string `json:"name" binding:"required"`
+	Username string `json:"user_name" binding:"required"`
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -40,6 +41,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		Name:              req.Name,
 		Email:             req.Email,
 		PassowrdPlainText: req.Password,
+		Username:          req.Username,
 	})
 	// verification email is yet to be added here
 

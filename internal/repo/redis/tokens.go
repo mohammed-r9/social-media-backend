@@ -1,48 +1,53 @@
-package redis
+package rdrepo
 
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"social-media-backend/internal/crypto/tokens/stateful"
 	"social-media-backend/internal/domain"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type TokenRepo interface {
 	StoreToken(ctx context.Context, params domain.StoreTokenParam) error
-	GetToken(ctx context.Context, key string) (stateful.ShortLivedToken, error)
+	GetToken(ctx context.Context, key string) (StoredToken, error)
 }
 
+var _ TokenRepo = (*RedisRepo)(nil)
+
 func (r *RedisRepo) StoreToken(ctx context.Context, params domain.StoreTokenParam) error {
-	token, err := json.Marshal(params.Token)
+	tokenBytes, err := json.Marshal(params.Token)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal token: %w", err)
 	}
 
 	key := stateful.RedisKeyBuilder(params.Token.Hash, params.Token.Scope)
-	cmd := r.c.Set(ctx, key, token, params.Token.Ttl)
+	ttl := params.Token.Ttl
 
-	return cmd.Err()
+	if err := r.c.Set(ctx, key, tokenBytes, ttl).Err(); err != nil {
+		return fmt.Errorf("redis set failed for key %s: %w", key, err)
+	}
+
+	return nil
 }
 
-func (r *RedisRepo) GetToken(ctx context.Context, key string) (stateful.ShortLivedToken, error) {
-	var token stateful.ShortLivedToken
+// the key should be formatted as "prefix:token_hash"
+func (r *RedisRepo) GetToken(ctx context.Context, key string) (StoredToken, error) {
+	var token StoredToken
 
-	cmd := r.c.Get(ctx, key)
-	if cmd.Err() != nil {
-		return token, cmd.Err()
-	}
-
-	data, err := cmd.Result()
+	data, err := r.c.Get(ctx, key).Result()
 	if err != nil {
-		return token, err
-	}
-
-	if data == "" {
-		return token, domain.ErrTokenNotFound
+		if errors.Is(err, redis.Nil) {
+			return token, domain.ErrTokenNotFound
+		}
+		return token, fmt.Errorf("redis get failed: %w", err)
 	}
 
 	if err := json.Unmarshal([]byte(data), &token); err != nil {
-		return token, err
+		return token, fmt.Errorf("failed to unmarshal token: %w", err)
 	}
 
 	return token, nil

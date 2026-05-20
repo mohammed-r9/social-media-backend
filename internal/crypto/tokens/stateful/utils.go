@@ -7,7 +7,7 @@ import (
 )
 
 // hashes the token and encodes the hash as a string
-func hashToken(plainText string) string {
+func HashToken(plainText string) string {
 	hash := sha256.Sum256([]byte(plainText))
 	return hex.EncodeToString(hash[:])
 }
@@ -18,7 +18,7 @@ type CompareTokenToHashParams struct {
 }
 
 func CompareTokenToHash(params CompareTokenToHashParams) bool {
-	tokenHash := hashToken(params.PlainText)
+	tokenHash := HashToken(params.PlainText)
 	return subtle.ConstantTimeCompare([]byte(tokenHash), []byte(params.StoredHash)) == 1
 }
 

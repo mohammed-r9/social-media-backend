@@ -13,14 +13,18 @@ import (
 )
 
 type AuthService struct {
-	userRepo    postgres.UserRepository
-	sessionRepo postgres.SessionsRepository
+	userRepo     postgres.UserRepository
+	sessionRepo  postgres.SessionsRepository
+	tokenService TokenService
 }
 
-func NewAuthService(userRepo postgres.UserRepository, sessionRepo postgres.SessionsRepository) *AuthService {
+func NewAuthService(userRepo postgres.UserRepository,
+	sessionRepo postgres.SessionsRepository,
+	tokenService TokenService) *AuthService {
 	return &AuthService{
-		userRepo:    userRepo,
-		sessionRepo: sessionRepo,
+		userRepo:     userRepo,
+		sessionRepo:  sessionRepo,
+		tokenService: tokenService,
 	}
 }
 
@@ -57,6 +61,7 @@ func (s *AuthService) Register(ctx context.Context, params RegisterParams) (doma
 		Name:         params.Name,
 		Email:        params.Email,
 		PasswordHash: passowrdHash,
+		Username:     params.Username,
 	})
 }
 

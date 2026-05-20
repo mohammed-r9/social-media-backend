@@ -17,5 +17,6 @@ func NewUserService(repo postgres.UserRepository) *UserService {
 type RegisterParams struct {
 	Name              string
 	Email             string
+	Username          string
 	PassowrdPlainText string
 }

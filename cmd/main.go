@@ -19,6 +19,7 @@ func main() {
 	app := application{
 		addr:   fmt.Sprintf(":%d", port),
 		db:     database.NewDb(),
+		rdb:    database.NewRedisClient(),
 		router: gin.Default(),
 	}
 	app.mount()
