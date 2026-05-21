@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"social-media-backend/internal/adapters/mailer"
 	"social-media-backend/internal/crypto/password"
 	"social-media-backend/internal/crypto/tokens/stateful"
 	"social-media-backend/internal/crypto/tokens/stateless"
@@ -16,6 +17,7 @@ type AuthService struct {
 	userRepo     postgres.UserRepository
 	sessionRepo  postgres.SessionsRepository
 	tokenService TokenService
+	mailer       mailer.EmailService
 }
 
 func NewAuthService(userRepo postgres.UserRepository,
@@ -56,13 +58,27 @@ func (s *AuthService) Register(ctx context.Context, params RegisterParams) (doma
 	if err != nil {
 		return domain.User{}, err
 	}
-	return s.userRepo.CreateUser(ctx, domain.CreateUserParams{
+	user, err := s.userRepo.CreateUser(ctx, domain.CreateUserParams{
 		ID:           userID,
 		Name:         params.Name,
 		Email:        params.Email,
 		PasswordHash: passowrdHash,
 		Username:     params.Username,
 	})
+	if err != nil {
+		return domain.User{}, err
+	}
+	token, err := s.tokenService.GenerateAndStoreEmailVerificationToken(ctx, user.ID)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	err = s.mailer.SendVerificationEmail(user.Email, token.Raw)
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	return user, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.AuthTokens, error) {
@@ -162,5 +178,64 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 	return stateless.GenerateAccessToken(domain.User{
 		ID:         params.UserID,
 		VerifiedAt: dto.User.VerifiedAt,
+	})
+}
+
+func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
+	if token == "" {
+		return domain.ErrInvalidToken
+	}
+
+	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
+		TokenPlainText: token,
+		Scope:          stateful.ScopeEmailVerification,
+	})
+	if err != nil {
+		return err
+	}
+	err = s.userRepo.VerifyUserEmail(ctx, userID)
+	return err
+}
+
+type UpdateUserPasswordParams struct {
+	UserID      uuid.UUID
+	NewPassword string
+	OldPassword string
+}
+
+func (s *AuthService) UpdateUserPassword(ctx context.Context, params UpdateUserPasswordParams) error {
+	if params.UserID == uuid.Nil {
+		return domain.ErrInvalidUserID
+	}
+
+	if params.NewPassword == params.OldPassword {
+		return domain.ErrInvalidPassword
+	}
+
+	user, err := s.userRepo.GetUserByID(ctx, params.UserID)
+	if err != nil {
+		return err
+	}
+
+	isMatched, err := password.ComparePassword(password.ComparePasswordParams{
+		Password:   params.OldPassword,
+		StoredHash: user.PasswordHash,
+	})
+	if err != nil {
+		return err
+	}
+
+	if !isMatched {
+		return domain.ErrInvalidOldPassword
+	}
+
+	newPasswordHash, err := password.HashPassword(params.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
+		ID:           user.ID,
+		PasswordHash: newPasswordHash,
 	})
 }

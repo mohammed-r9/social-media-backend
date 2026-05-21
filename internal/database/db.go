@@ -25,6 +25,11 @@ func NewDb() *pgxpool.Pool {
 	}
 
 	stdDB := stdlib.OpenDBFromPool(pool)
+	defer func() {
+		if err := stdDB.Close(); err != nil {
+			log.Printf("error while closing stdDB: %v\n", err)
+		}
+	}()
 
 	if err := migrations.MigrateFS(stdDB, migrations.FS, "."); err != nil {
 		log.Fatalf("Failed migrations: %v", err)

@@ -13,3 +13,13 @@ WHERE email = @email;
 UPDATE users
 	SET password_hash = @password_hash
 	WHERE id = @id;
+
+-- name: VerifyUserEmail :execrows
+UPDATE users
+	SET verified_at = CURRENT_TIMESTAMP
+	WHERE id = @id;
+
+-- name: GetUserByID :one
+SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
+FROM users
+WHERE id = @id;

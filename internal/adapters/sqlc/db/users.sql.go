@@ -102,6 +102,43 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 	return i, err
 }
 
+const getUserByID = `-- name: GetUserByID :one
+SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
+FROM users
+WHERE id = $1
+`
+
+type GetUserByIDRow struct {
+	ID           uuid.UUID   `json:"id"`
+	Email        string      `json:"email"`
+	Name         string      `json:"name"`
+	Username     string      `json:"username"`
+	PasswordHash string      `json:"-"`
+	VerifiedAt   *time.Time  `json:"verified_at"`
+	CreatedAt    time.Time   `json:"created_at"`
+	UpdatedAt    time.Time   `json:"updated_at"`
+	IsSuspended  bool        `json:"is_suspended"`
+	Phone        pgtype.Text `json:"phone"`
+}
+
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
+	var i GetUserByIDRow
+	err := row.Scan(
+		&i.ID,
+		&i.Email,
+		&i.Name,
+		&i.Username,
+		&i.PasswordHash,
+		&i.VerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsSuspended,
+		&i.Phone,
+	)
+	return i, err
+}
+
 const updateUserPassword = `-- name: UpdateUserPassword :execrows
 UPDATE users
 	SET password_hash = $1
@@ -115,6 +152,20 @@ type UpdateUserPasswordParams struct {
 
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (int64, error) {
 	result, err := q.db.Exec(ctx, updateUserPassword, arg.PasswordHash, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const verifyUserEmail = `-- name: VerifyUserEmail :execrows
+UPDATE users
+	SET verified_at = CURRENT_TIMESTAMP
+	WHERE id = $1
+`
+
+func (q *Queries) VerifyUserEmail(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, verifyUserEmail, id)
 	if err != nil {
 		return 0, err
 	}

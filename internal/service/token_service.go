@@ -20,8 +20,10 @@ func NewTokenService(repo rdrepo.TokenRepo) *TokenService {
 	}
 }
 
-func (s *TokenService) GenerateAndStoreEmailVerificationToken(ctx context.Context,
-	userID uuid.UUID) (stateful.ShortLivedToken, error) {
+func (s *TokenService) GenerateAndStoreEmailVerificationToken(
+	ctx context.Context,
+	userID uuid.UUID,
+) (stateful.ShortLivedToken, error) {
 	if userID == uuid.Nil {
 		return stateful.ShortLivedToken{}, domain.ErrInvalidUserID
 	}

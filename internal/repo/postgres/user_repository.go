@@ -9,12 +9,16 @@ import (
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/utils"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error)
 	GetUserByEmail(ctx context.Context, email string) (domain.User, error)
+	GetUserByID(ctx context.Context, userID uuid.UUID) (domain.User, error)
+	UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) error
+	VerifyUserEmail(ctx context.Context, userID uuid.UUID) error
 }
 
 var _ UserRepository = (*PostgresRepo)(nil)
@@ -71,6 +75,28 @@ func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain
 	}, nil
 }
 
+func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domain.User, error) {
+	if userID == uuid.Nil {
+		return domain.User{}, domain.ErrInvalidUserID
+	}
+
+	user, err := r.q.GetUserByID(ctx, userID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return domain.User{}, domain.ErrUserNotFound
+	}
+
+	return domain.User{
+		ID:           user.ID,
+		Email:        user.Email,
+		Name:         user.Name,
+		Username:     user.Username,
+		Phone:        utils.NullStringToString(user.Phone),
+		PasswordHash: user.PasswordHash,
+		IsSuspended:  user.IsSuspended,
+		VerifiedAt:   user.VerifiedAt,
+	}, nil
+}
+
 func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) error {
 	rowsAffected, err := r.q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
 		ID:           params.ID,
@@ -79,6 +105,14 @@ func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.Upd
 
 	if rowsAffected == 0 {
 		return domain.ErrNoRowsAffected
+	}
+	return err
+}
+
+func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) error {
+	rowsAffected, err := r.q.VerifyUserEmail(ctx, userID)
+	if rowsAffected == 0 {
+		return domain.ErrUserNotFound
 	}
 	return err
 }

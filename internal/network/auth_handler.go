@@ -1,10 +1,8 @@
 package network
 
 import (
-	"errors"
 	"log"
 	"net/http"
-	"social-media-backend/internal/domain"
 	"social-media-backend/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -46,22 +44,30 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	// verification email is yet to be added here
 
 	if err != nil {
-		// maybe add more errors later?
-		switch {
-		case errors.Is(err, domain.ErrEmailAlreadyTaken):
-			c.JSON(http.StatusConflict, gin.H{
-				"error": "email already exists",
-			})
-			return
-
-		default:
-			log.Printf("register user failed email=%s err=%v", req.Email, err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "internal server error",
-			})
-			return
-		}
+		log.Printf("request failed: %v", err)
+		res := mapError(err)
+		c.JSON(res.Status, res)
+		return
 	}
 
 	c.JSON(http.StatusCreated, createdUser)
+}
+
+func (h *AuthHandler) VerifyUserEmail(c *gin.Context) {
+	token := c.Query("t")
+	if token == "" {
+		log.Fatalln("invalid email verification token")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "bad request",
+		})
+	}
+
+	err := h.svc.VerifyUserEmail(c.Request.Context(), token)
+
+	if err != nil {
+		log.Printf("request failed: %v", err)
+		res := mapError(err)
+		c.JSON(res.Status, res)
+		return
+	}
 }
