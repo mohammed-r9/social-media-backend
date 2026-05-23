@@ -22,7 +22,7 @@ type createUserRequest struct {
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=8"`
 	Name     string `json:"name" binding:"required"`
-	Username string `json:"user_name" binding:"required"`
+	Username string `json:"username" binding:"required"`
 }
 
 func (h *AuthHandler) Register(c *gin.Context) {
@@ -45,8 +45,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("request failed: %v", err)
-		res := mapError(err)
-		c.JSON(res.Status, res)
+		c.Error(err)
 		return
 	}
 
@@ -66,8 +65,7 @@ func (h *AuthHandler) VerifyUserEmail(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("request failed: %v", err)
-		res := mapError(err)
-		c.JSON(res.Status, res)
+		c.Error(err)
 		return
 	}
 }

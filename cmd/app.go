@@ -61,6 +61,8 @@ func (a *application) mount() {
 	// v1
 	{
 		v1 := a.router.Group("/api/v1")
+		v1.Use(network.ErrorHandler())
+
 		network.RegisterUserRoutes(v1, userHandler)
 		network.RegisterAuthRoutes(v1, authHandler)
 	}
