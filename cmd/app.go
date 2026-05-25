@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"log/slog"
 	"net/http"
 	"social-media-backend/internal/adapters/sqlc/db"
+	"social-media-backend/internal/logging"
 	"social-media-backend/internal/network"
 	"social-media-backend/internal/repo/postgres"
 	rdrepo "social-media-backend/internal/repo/redis"
@@ -44,6 +46,13 @@ func (a *application) mount() {
 	})
 
 	queries := db.New(a.db)
+	logger := logging.NewLogger(logging.LoggerConfig{
+		Level:  slog.LevelDebug,
+		Format: logging.JSON,
+
+		// add logging to a file later
+		// Output: file,
+	})
 
 	// repos
 	postgresRepo := postgres.NewPostgresRepository(queries)
@@ -52,7 +61,7 @@ func (a *application) mount() {
 	// services
 	userSvc := service.NewUserService(postgresRepo)
 	tokenSvc := service.NewTokenService(redisRepo)
-	authSvc := service.NewAuthService(postgresRepo, postgresRepo, *tokenSvc)
+	authSvc := service.NewAuthService(postgresRepo, postgresRepo, *tokenSvc, logger)
 
 	// handlers
 	userHandler := network.NewUserHandler(userSvc)
@@ -62,6 +71,7 @@ func (a *application) mount() {
 	{
 		v1 := a.router.Group("/api/v1")
 		v1.Use(network.ErrorHandler())
+		v1.Use(network.Logger(logger))
 
 		network.RegisterUserRoutes(v1, userHandler)
 		network.RegisterAuthRoutes(v1, authHandler)

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"log/slog"
 	"social-media-backend/internal/adapters/mailer"
 	"social-media-backend/internal/crypto/password"
 	"social-media-backend/internal/crypto/tokens/stateful"
@@ -18,15 +19,19 @@ type AuthService struct {
 	sessionRepo  postgres.SessionsRepository
 	tokenService TokenService
 	mailer       mailer.EmailService
+	logger       *slog.Logger
 }
 
 func NewAuthService(userRepo postgres.UserRepository,
 	sessionRepo postgres.SessionsRepository,
-	tokenService TokenService) *AuthService {
+	tokenService TokenService, logger *slog.Logger) *AuthService {
 	return &AuthService{
 		userRepo:     userRepo,
 		sessionRepo:  sessionRepo,
 		tokenService: tokenService,
+		logger: logger.With(
+			"service", "user-service",
+		),
 	}
 }
 
@@ -37,25 +42,36 @@ type LoginParams struct {
 }
 
 func (s *AuthService) Register(ctx context.Context, params RegisterParams) (domain.User, error) {
+	log := s.logger.With("op", "create_user")
+
 	if params.PassowrdPlainText == "" {
+		log.Warn("validation failed", "field", "password")
 		return domain.User{}, domain.ErrInvalidPassword
 	}
 
 	if params.Email == "" {
+		log.Warn("validation failed", "field", "email")
 		return domain.User{}, domain.ErrInvalidUserEmail
 	}
 
 	if params.Name == "" {
+		log.Warn("validation failed", "field", "name")
 		return domain.User{}, domain.ErrInvalidUserName
+	}
+	if params.Username == "" {
+		log.Warn("validation failed", "field", "username")
+		return domain.User{}, domain.ErrInvalidUsername
 	}
 
 	passowrdHash, err := password.HashPassword(params.PassowrdPlainText)
 	if err != nil {
+		log.Error("password hashing failed", "err", err)
 		return domain.User{}, err
 	}
 
 	userID, err := uuid.NewV7()
 	if err != nil {
+		log.Error("generating uuid failed", "err", err)
 		return domain.User{}, err
 	}
 	user, err := s.userRepo.CreateUser(ctx, domain.CreateUserParams{
@@ -66,15 +82,18 @@ func (s *AuthService) Register(ctx context.Context, params RegisterParams) (doma
 		Username:     params.Username,
 	})
 	if err != nil {
+		log.Error("user creation failed", "err", err)
 		return domain.User{}, err
 	}
 	token, err := s.tokenService.GenerateAndStoreEmailVerificationToken(ctx, user.ID)
 	if err != nil {
+		log.Error("email verification token generation failed", "err", err)
 		return domain.User{}, err
 	}
 
 	err = s.mailer.SendVerificationEmail(user.Email, token.Raw)
 	if err != nil {
+		log.Error("sending email verification failed", "err", err)
 		return domain.User{}, err
 	}
 
