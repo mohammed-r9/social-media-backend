@@ -41,6 +41,7 @@ const (
 const (
 	PASSWORD_RESET_TTL     = time.Minute * 30
 	EMAIL_VERIFICATION_TTL = time.Hour * 2
+	REFRESH_TTL            = time.Hour * 24 * 30
 )
 
 type ShortLivedToken struct {

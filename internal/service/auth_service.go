@@ -130,9 +130,11 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 
 	_, err = s.sessionRepo.CreateSession(ctx, domain.CreateSessionParams{
 		ID:               sessionID,
+		UserID:           user.ID,
 		RefreshTokenHash: storedHashes.RefreshHash,
 		CsrfTokenHash:    storedHashes.CsrfHash,
 		DeviceName:       "temp",
+		ExpiresAt:        time.Now().Add(stateful.REFRESH_TTL),
 	})
 
 	if err != nil {

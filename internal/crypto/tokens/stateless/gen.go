@@ -26,7 +26,7 @@ func GenerateAccessToken(user domain.User) (string, error) {
 		return "", err
 	}
 
-	signed, err := jwt.Sign(token, jwt.WithKey(jwa.RS256, env.Config.JWT_KEY))
+	signed, err := jwt.Sign(token, jwt.WithKey(jwa.HS256, env.Config.JWT_KEY))
 	if err != nil {
 		return "", err
 	}
