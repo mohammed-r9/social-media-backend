@@ -72,13 +72,8 @@ SELECT
 	u.verified_at
 FROM sessions s
 JOIN users u ON u.id = s.user_id
-WHERE s.id = $1 AND s.user_id = $2
+WHERE s.id = $1
 `
-
-type GetUserSessionParams struct {
-	ID     string    `json:"id"`
-	UserID uuid.UUID `json:"user_id"`
-}
 
 type GetUserSessionRow struct {
 	ID               string     `json:"id"`
@@ -91,8 +86,8 @@ type GetUserSessionRow struct {
 	VerifiedAt       *time.Time `json:"verified_at"`
 }
 
-func (q *Queries) GetUserSession(ctx context.Context, arg GetUserSessionParams) (GetUserSessionRow, error) {
-	row := q.db.QueryRow(ctx, getUserSession, arg.ID, arg.UserID)
+func (q *Queries) GetUserSession(ctx context.Context, id string) (GetUserSessionRow, error) {
+	row := q.db.QueryRow(ctx, getUserSession, id)
 	var i GetUserSessionRow
 	err := row.Scan(
 		&i.ID,

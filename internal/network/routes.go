@@ -11,8 +11,10 @@ func RegisterUserRoutes(r *gin.RouterGroup, h *UserHandler) {
 
 func RegisterAuthRoutes(r *gin.RouterGroup, h *AuthHandler) {
 	auth := r.Group("/auth")
+
 	{
 		auth.POST("register", h.Register)
 		auth.POST("login", h.Login)
+		auth.POST("/refresh", h.RefreshAccessToken)
 	}
 }

@@ -16,4 +16,4 @@ SELECT
 	u.verified_at
 FROM sessions s
 JOIN users u ON u.id = s.user_id
-WHERE s.id = @id AND s.user_id = @user_id;
+WHERE s.id = @id;

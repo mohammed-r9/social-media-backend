@@ -11,6 +11,39 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Block struct {
+	BlockerID uuid.UUID `json:"blocker_id"`
+	BlockedID uuid.UUID `json:"blocked_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Follow struct {
+	FollowerID  uuid.UUID `json:"follower_id"`
+	FollowingID uuid.UUID `json:"following_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type Permission struct {
+	ID        int32     `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Role struct {
+	ID        int32     `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type RolePermission struct {
+	RoleID       int32 `json:"role_id"`
+	PermissionID int32 `json:"permission_id"`
+}
+
 type Session struct {
 	ID               string     `json:"id"`
 	RefreshTokenHash string     `json:"refresh_token_hash"`
@@ -34,4 +67,9 @@ type User struct {
 	VerifiedAt   *time.Time  `json:"verified_at"`
 	CreatedAt    time.Time   `json:"created_at"`
 	UpdatedAt    time.Time   `json:"updated_at"`
+}
+
+type UserRole struct {
+	UserID uuid.UUID `json:"user_id"`
+	RoleID int32     `json:"role_id"`
 }

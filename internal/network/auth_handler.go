@@ -74,11 +74,17 @@ func (h *AuthHandler) VerifyUserEmail(c *gin.Context) {
 }
 
 type loginRequest struct {
-	Email    string `json:"email" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
+	authMode := c.GetHeader("X-Auth-Mode") // SHOULD ONLY BE USED TO FORMAT THE RESPONSE
+	if authMode == "" {
+		_ = c.Error(errMissingAuthModeHeader)
+		return
+	}
+
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		_ = c.Error(err)
@@ -95,33 +101,73 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie(
-		"refresh_token",
-		sessionTokens.RefreshToken,
-		int(stateful.REFRESH_TTL),
-		"/",
-		"",
-		true,
-		true,
-	)
-	c.SetCookie("csrf_token",
-		sessionTokens.CsrfToken,
-		int(stateful.REFRESH_TTL),
-		"/",
-		"",
-		true,
-		false,
-	)
-	c.SetCookie("session_id",
-		sessionTokens.SessionID,
-		int(stateful.REFRESH_TTL),
-		"/",
-		"",
-		true,
-		true,
-	)
+	switch authMode {
+	case "cookie":
+		c.SetCookie(
+			"refresh_token",
+			sessionTokens.RefreshToken,
+			int(stateful.REFRESH_TTL),
+			"/",
+			"",
+			true,
+			true,
+		)
+		c.SetCookie("csrf_token",
+			sessionTokens.CsrfToken,
+			int(stateful.REFRESH_TTL),
+			"/",
+			"",
+			true,
+			false,
+		)
+		c.SetCookie("session_id",
+			sessionTokens.SessionID,
+			int(stateful.REFRESH_TTL),
+			"/",
+			"",
+			true,
+			true,
+		)
+
+		OK(c, gin.H{
+			"access_token": sessionTokens.AccessToken,
+		})
+
+	case "token":
+		OK(c, gin.H{
+			"access_token":  sessionTokens.AccessToken,
+			"refresh_token": sessionTokens.RefreshToken,
+			"session_id":    sessionTokens.SessionID,
+		})
+	}
+}
+
+func (h *AuthHandler) RefreshAccessToken(c *gin.Context) {
+	var opTokens refreshTokens
+
+	// web
+	opTokens, err := refreshGetTokensFromCookies(c)
+	if err != nil {
+		// mobile
+		opTokens, err = refreshGetTokensFromBody(c)
+		if err != nil {
+			_ = c.Error(err)
+			return
+		}
+	}
+
+	accessToken, err := h.svc.RefreshAccessToken(c.Request.Context(), service.RefreshParams{
+		RefreshToken: opTokens.RefreshToken,
+		SessionID:    opTokens.SessionID,
+		CsrfToken:    opTokens.CsrfToken,
+	})
+
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 
 	OK(c, gin.H{
-		"access_token": sessionTokens.AccessToken,
+		"access_token": accessToken,
 	})
 }

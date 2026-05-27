@@ -6,8 +6,12 @@ import (
 )
 
 var (
-	ErrTokenNotFound = errors.New("token not found")
-	ErrExpiredToken  = errors.New("token not found")
+	ErrTokenNotFound       = errors.New("token not found")
+	ErrExpiredToken        = errors.New("token not found")
+	ErrMissingCsrf         = errors.New("missing csrf token")
+	ErrMissingRefreshToken = errors.New("missing refresh token")
+	ErrMissingSessionID    = errors.New("missing session id")
+	ErrTokenMismatch       = errors.New("token mismatch")
 )
 
 type StoreTokenParam struct {

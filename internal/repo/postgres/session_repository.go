@@ -13,7 +13,7 @@ import (
 
 type SessionsRepository interface {
 	CreateSession(context.Context, domain.CreateSessionParams) (domain.Session, error)
-	GetUserSession(context.Context, domain.GetUserSessionParams) (UserSessionDTO, error)
+	GetUserSession(context.Context, string) (UserSessionDTO, error)
 }
 
 var _ SessionsRepository = (*PostgresRepo)(nil)
@@ -54,11 +54,8 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSe
 	}, nil
 }
 
-func (r *PostgresRepo) GetUserSession(ctx context.Context, params domain.GetUserSessionParams) (UserSessionDTO, error) {
-	session, err := r.q.GetUserSession(ctx, db.GetUserSessionParams{
-		ID:     params.ID,
-		UserID: params.UserID,
-	})
+func (r *PostgresRepo) GetUserSession(ctx context.Context, sessionID string) (UserSessionDTO, error) {
+	session, err := r.q.GetUserSession(ctx, sessionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return UserSessionDTO{}, domain.ErrSessionNotFound
