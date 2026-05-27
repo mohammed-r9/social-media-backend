@@ -5,8 +5,7 @@ import (
 	"log/slog"
 	"social-media-backend/internal/adapters/mailer"
 	"social-media-backend/internal/crypto/password"
-	"social-media-backend/internal/crypto/tokens/stateful"
-	"social-media-backend/internal/crypto/tokens/stateless"
+	"social-media-backend/internal/crypto/tokens"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo/postgres"
 	"time"
@@ -124,9 +123,9 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		return domain.AuthTokens{}, domain.ErrInvalidCredentials
 	}
 
-	tokens := stateful.GenerateSessionTokens()
-	storedHashes := tokens.ToHash()
-	sessionID := domain.GenerateSessionID()
+	sessionTokens := tokens.GenerateSessionTokens()
+	storedHashes := sessionTokens.ToHash()
+	sessionID := tokens.GenerateSessionID()
 
 	_, err = s.sessionRepo.CreateSession(ctx, domain.CreateSessionParams{
 		ID:               sessionID,
@@ -134,22 +133,22 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		RefreshTokenHash: storedHashes.RefreshHash,
 		CsrfTokenHash:    storedHashes.CsrfHash,
 		DeviceName:       "temp",
-		ExpiresAt:        time.Now().Add(stateful.REFRESH_TTL),
+		ExpiresAt:        time.Now().Add(tokens.REFRESH_TTL),
 	})
 
 	if err != nil {
 		return domain.AuthTokens{}, err
 	}
 
-	accessToken, err := stateless.GenerateAccessToken(user)
+	accessToken, err := tokens.GenerateAccessToken(user)
 	if err != nil {
 		return domain.AuthTokens{}, err
 	}
 
 	return domain.AuthTokens{
 		AccessToken:  accessToken,
-		RefreshToken: tokens.RefreshToken,
-		CsrfToken:    tokens.CsrfToken,
+		RefreshToken: sessionTokens.RefreshToken,
+		CsrfToken:    sessionTokens.CsrfToken,
 		SessionID:    sessionID,
 	}, nil
 }
@@ -175,26 +174,26 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		return "", domain.ErrSessionRevoked
 	}
 
-	isValid := stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
+	isValid := tokens.CompareTokenToHash(tokens.CompareTokenToHashParams{
 		PlainText:  params.RefreshToken,
 		StoredHash: dto.Session.RefreshTokenHash,
 	})
 	if !isValid {
-		return "", domain.ErrTokenMismatch
+		return "", tokens.ErrTokenMismatch
 	}
 
 	if params.CsrfToken != nil {
-		isValid = stateful.CompareTokenToHash(stateful.CompareTokenToHashParams{
+		isValid = tokens.CompareTokenToHash(tokens.CompareTokenToHashParams{
 			PlainText:  *params.CsrfToken,
 			StoredHash: dto.Session.CsrfTokenHash,
 		})
 
 		if !isValid {
-			return "", domain.ErrTokenMismatch
+			return "", tokens.ErrTokenMismatch
 		}
 	}
 
-	return stateless.GenerateAccessToken(domain.User{
+	return tokens.GenerateAccessToken(domain.User{
 		ID:         dto.Session.UserID,
 		VerifiedAt: dto.User.VerifiedAt,
 	})
@@ -207,7 +206,7 @@ func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
 		TokenPlainText: token,
-		Scope:          stateful.ScopeEmailVerification,
+		Scope:          tokens.ScopeEmailVerification,
 	})
 	if err != nil {
 		return err
@@ -271,7 +270,7 @@ func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPas
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
 		TokenPlainText: params.Token,
-		Scope:          stateful.ScopePasswordReset,
+		Scope:          tokens.ScopePasswordReset,
 	})
 	if err != nil {
 		return err

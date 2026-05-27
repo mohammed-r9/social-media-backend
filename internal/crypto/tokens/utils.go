@@ -1,4 +1,4 @@
-package stateful
+package tokens
 
 import (
 	"crypto/sha256"

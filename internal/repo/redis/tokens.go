@@ -5,26 +5,25 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"social-media-backend/internal/crypto/tokens/stateful"
-	"social-media-backend/internal/domain"
+	"social-media-backend/internal/crypto/tokens"
 
 	"github.com/redis/go-redis/v9"
 )
 
 type TokenRepo interface {
-	StoreToken(ctx context.Context, params domain.StoreTokenParam) error
+	StoreToken(ctx context.Context, params tokens.StoreTokenParam) error
 	GetToken(ctx context.Context, key string) (StoredToken, error)
 }
 
 var _ TokenRepo = (*RedisRepo)(nil)
 
-func (r *RedisRepo) StoreToken(ctx context.Context, params domain.StoreTokenParam) error {
+func (r *RedisRepo) StoreToken(ctx context.Context, params tokens.StoreTokenParam) error {
 	tokenBytes, err := json.Marshal(params.Token)
 	if err != nil {
 		return fmt.Errorf("failed to marshal token: %w", err)
 	}
 
-	key := stateful.RedisKeyBuilder(params.Token.Hash, params.Token.Scope)
+	key := tokens.RedisKeyBuilder(params.Token.Hash, params.Token.Scope)
 	ttl := params.Token.Ttl
 
 	if err := r.c.Set(ctx, key, tokenBytes, ttl).Err(); err != nil {
@@ -41,7 +40,7 @@ func (r *RedisRepo) GetToken(ctx context.Context, key string) (StoredToken, erro
 	data, err := r.c.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return token, domain.ErrTokenNotFound
+			return token, tokens.ErrTokenNotFound
 		}
 		return token, fmt.Errorf("redis get failed: %w", err)
 	}

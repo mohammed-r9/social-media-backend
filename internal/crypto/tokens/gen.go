@@ -1,11 +1,12 @@
-package stateless
+package tokens
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
-	"time"
-
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/env"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/v2/jwa"
@@ -69,4 +70,35 @@ func VerifyAccessToken(token string) (AccessTokenClaims, error) {
 		UserID:          userID,
 		IsEmailVerified: isVerified,
 	}, nil
+}
+func GenerateOpaqueToken(length int) string {
+	randomByte := make([]byte, length)
+	rand.Read(randomByte)
+	return hex.EncodeToString(randomByte)
+}
+
+func newShortLivedToken(userID uuid.UUID, scope TokenScope, ttl time.Duration) ShortLivedToken {
+	raw := GenerateOpaqueToken(32)
+	hash := HashToken(raw)
+
+	return ShortLivedToken{
+		UserID:    userID,
+		Scope:     scope,
+		Ttl:       ttl,
+		Raw:       raw,
+		Hash:      hash,
+		ExpiresAt: time.Now().Add(ttl),
+	}
+}
+
+func GenerateEmailVerificationToken(userID uuid.UUID) ShortLivedToken {
+	return newShortLivedToken(userID, ScopeEmailVerification, EMAIL_VERIFICATION_TTL)
+}
+
+func GeneratePasswordResetToken(userID uuid.UUID) ShortLivedToken {
+	return newShortLivedToken(userID, ScopePasswordReset, PASSWORD_RESET_TTL)
+}
+
+func GenerateSessionID() string {
+	return GenerateOpaqueToken(24)
 }

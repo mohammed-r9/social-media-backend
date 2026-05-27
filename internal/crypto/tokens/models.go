@@ -1,9 +1,21 @@
-package stateful
+package tokens
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrMissingClaim = errors.New("missing claim in jwt")
+)
+
+const (
+	PASSWORD_RESET_TTL     = time.Minute * 30
+	EMAIL_VERIFICATION_TTL = time.Hour * 2
+	REFRESH_TTL            = time.Hour * 24 * 30
+	ACCESS_TOKEN_TTL       = time.Minute * 15
 )
 
 type SessionTokens struct {
@@ -14,6 +26,12 @@ type SessionTokens struct {
 type SessionTokenHashes struct {
 	RefreshHash string
 	CsrfHash    string
+}
+
+type AccessTokenClaims struct {
+	UserID          uuid.UUID
+	IsEmailVerified bool
+	// maybe I need more fields? idk
 }
 
 // HashTokens requires both RefreshToken and CsrfToken to be set before being called,
@@ -36,12 +54,6 @@ type TokenScope string
 const (
 	ScopePasswordReset     TokenScope = "password_reset"
 	ScopeEmailVerification TokenScope = "email_verification"
-)
-
-const (
-	PASSWORD_RESET_TTL     = time.Minute * 30
-	EMAIL_VERIFICATION_TTL = time.Hour * 2
-	REFRESH_TTL            = time.Hour * 24 * 30
 )
 
 type ShortLivedToken struct {

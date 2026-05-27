@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"social-media-backend/internal/crypto/tokens/stateful"
+	"social-media-backend/internal/crypto/tokens"
 	"social-media-backend/internal/domain"
 	rdrepo "social-media-backend/internal/repo/redis"
 	"time"
@@ -23,18 +23,18 @@ func NewTokenService(repo rdrepo.TokenRepo) *TokenService {
 func (s *TokenService) GenerateAndStoreEmailVerificationToken(
 	ctx context.Context,
 	userID uuid.UUID,
-) (stateful.ShortLivedToken, error) {
+) (tokens.ShortLivedToken, error) {
 	if userID == uuid.Nil {
-		return stateful.ShortLivedToken{}, domain.ErrInvalidUserID
+		return tokens.ShortLivedToken{}, domain.ErrInvalidUserID
 	}
 
-	token := stateful.GenerateEmailVerificationToken(userID)
-	err := s.repo.StoreToken(ctx, domain.StoreTokenParam{
+	token := tokens.GenerateEmailVerificationToken(userID)
+	err := s.repo.StoreToken(ctx, tokens.StoreTokenParam{
 		Token: token,
 	})
 
 	if err != nil {
-		return stateful.ShortLivedToken{}, err
+		return tokens.ShortLivedToken{}, err
 	}
 
 	return token, nil
@@ -43,19 +43,19 @@ func (s *TokenService) GenerateAndStoreEmailVerificationToken(
 func (s *TokenService) GenerateAndStorePasswordResetToken(
 	ctx context.Context,
 	userID uuid.UUID,
-) (stateful.ShortLivedToken, error) {
+) (tokens.ShortLivedToken, error) {
 
 	if userID == uuid.Nil {
-		return stateful.ShortLivedToken{}, domain.ErrInvalidUserID
+		return tokens.ShortLivedToken{}, domain.ErrInvalidUserID
 	}
 
-	token := stateful.GeneratePasswordResetToken(userID)
-	err := s.repo.StoreToken(ctx, domain.StoreTokenParam{
+	token := tokens.GeneratePasswordResetToken(userID)
+	err := s.repo.StoreToken(ctx, tokens.StoreTokenParam{
 		Token: token,
 	})
 
 	if err != nil {
-		return stateful.ShortLivedToken{}, err
+		return tokens.ShortLivedToken{}, err
 	}
 
 	return token, nil
@@ -63,28 +63,28 @@ func (s *TokenService) GenerateAndStorePasswordResetToken(
 
 type VerifyTokenParams struct {
 	TokenPlainText string
-	Scope          stateful.TokenScope
+	Scope          tokens.TokenScope
 }
 
 // VerifyToken verifies the token and returns a uuid of the owner if valid
 func (s *TokenService) VerifyToken(ctx context.Context, params VerifyTokenParams) (uuid.UUID, error) {
-	hash := stateful.HashToken(params.TokenPlainText)
-	key := stateful.RedisKeyBuilder(hash, params.Scope)
+	hash := tokens.HashToken(params.TokenPlainText)
+	key := tokens.RedisKeyBuilder(hash, params.Scope)
 	token, err := s.repo.GetToken(ctx, key)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
 	if token.UserID == uuid.Nil {
-		return uuid.Nil, domain.ErrInvalidToken
+		return uuid.Nil, tokens.ErrInvalidToken
 	}
 
 	if token.Scope != params.Scope {
-		return uuid.Nil, domain.ErrInvalidToken
+		return uuid.Nil, tokens.ErrInvalidToken
 	}
 
 	if time.Now().After(token.ExpiresAt) {
-		return uuid.Nil, domain.ErrExpiredToken
+		return uuid.Nil, tokens.ErrExpiredToken
 	}
 
 	return token.UserID, nil

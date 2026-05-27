@@ -2,7 +2,7 @@ package domain
 
 import (
 	"errors"
-	"social-media-backend/internal/crypto/tokens/stateful"
+
 	"time"
 
 	"github.com/google/uuid"
@@ -58,8 +58,4 @@ func (s *Session) ValidateSession() error {
 	}
 
 	return nil
-}
-
-func GenerateSessionID() string {
-	return stateful.GenerateOpaqueToken(24)
 }
