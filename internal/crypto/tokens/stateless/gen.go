@@ -36,7 +36,7 @@ func GenerateAccessToken(user domain.User) (string, error) {
 
 // VerifyAccessToken verifies the token and returns the claims if valid
 func VerifyAccessToken(token string) (AccessTokenClaims, error) {
-	verifiedToken, err := jwt.Parse([]byte(token), jwt.WithKey(jwa.RS256, env.Config.JWT_KEY))
+	verifiedToken, err := jwt.Parse([]byte(token), jwt.WithKey(jwa.HS256, env.Config.JWT_KEY))
 	if err != nil {
 		return AccessTokenClaims{}, err
 	}

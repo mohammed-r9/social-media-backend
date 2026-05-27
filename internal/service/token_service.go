@@ -40,6 +40,27 @@ func (s *TokenService) GenerateAndStoreEmailVerificationToken(
 	return token, nil
 }
 
+func (s *TokenService) GenerateAndStorePasswordResetToken(
+	ctx context.Context,
+	userID uuid.UUID,
+) (stateful.ShortLivedToken, error) {
+
+	if userID == uuid.Nil {
+		return stateful.ShortLivedToken{}, domain.ErrInvalidUserID
+	}
+
+	token := stateful.GeneratePasswordResetToken(userID)
+	err := s.repo.StoreToken(ctx, domain.StoreTokenParam{
+		Token: token,
+	})
+
+	if err != nil {
+		return stateful.ShortLivedToken{}, err
+	}
+
+	return token, nil
+}
+
 type VerifyTokenParams struct {
 	TokenPlainText string
 	Scope          stateful.TokenScope

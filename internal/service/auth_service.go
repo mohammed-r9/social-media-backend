@@ -258,3 +258,49 @@ func (s *AuthService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 		PasswordHash: newPasswordHash,
 	})
 }
+
+type ResetUserPasswordParams struct {
+	Token       string
+	NewPassword string
+}
+
+func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPasswordParams) error {
+	if params.Token == "" {
+		return domain.ErrInvalidToken
+	}
+
+	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
+		TokenPlainText: params.Token,
+		Scope:          stateful.ScopePasswordReset,
+	})
+	if err != nil {
+		return err
+	}
+
+	hash, err := password.HashPassword(params.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
+		ID:           userID,
+		PasswordHash: hash,
+	})
+}
+
+func (s *AuthService) AskForPasswordReset(ctx context.Context, email string) error {
+	if email == "" {
+		return domain.ErrInvalidUserEmail
+	}
+
+	user, err := s.userRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		return err
+	}
+
+	token, err := s.tokenService.GenerateAndStorePasswordResetToken(ctx, user.ID)
+	if err != nil {
+		return err
+	}
+	return s.mailer.SendPasswordResetEmail(email, token.Raw)
+}

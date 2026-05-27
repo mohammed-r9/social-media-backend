@@ -1,9 +1,11 @@
 package network
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"social-media-backend/internal/crypto/tokens/stateful"
+	"social-media-backend/internal/domain"
 	"social-media-backend/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -169,5 +171,58 @@ func (h *AuthHandler) RefreshAccessToken(c *gin.Context) {
 
 	OK(c, gin.H{
 		"access_token": accessToken,
+	})
+}
+
+type forgotPassowrdRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req forgotPassowrdRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	err := h.svc.AskForPasswordReset(c.Request.Context(), req.Email)
+	if err != nil {
+		if !errors.Is(err, domain.ErrUserNotFound) {
+			_ = c.Error(err)
+			return
+		}
+	}
+
+	OK(c, gin.H{
+		"message": "If the account exists, a password reset email has been sent.",
+	})
+}
+
+type resetPasswordRequest struct {
+	Password string `json:"password" binding:"required"`
+	Token    string `json:"token" binding:"required"`
+}
+
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	var req resetPasswordRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	err := h.svc.ResetUserPassword(c.Request.Context(), service.ResetUserPasswordParams{
+		Token:       req.Token,
+		NewPassword: req.Password,
+	})
+
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	OK(c, gin.H{
+		"message": "Password resetted successfully",
 	})
 }
