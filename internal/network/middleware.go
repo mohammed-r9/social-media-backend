@@ -1,6 +1,7 @@
 package network
 
 import (
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -43,12 +44,23 @@ func Logger(logger *slog.Logger) gin.HandlerFunc {
 
 		c.Next()
 
+		reqID, _ := c.Get("request_id")
 		latency := time.Since(start)
-		status := c.Writer.Status()
+		statusAny, exists := c.Get("status_code")
+		status := 200
+		if exists {
+			status = statusAny.(int)
+		}
+
+		if v, ok := c.Get("status_code"); ok {
+			status = v.(int)
+		}
+		fmt.Printf("status is: %v\n", status)
 
 		errs := c.Errors.ByType(gin.ErrorTypeAny)
 
 		attrs := []any{
+			"request_id", reqID,
 			"method", c.Request.Method,
 			"path", c.Request.URL.Path,
 			"status", status,

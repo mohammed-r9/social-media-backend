@@ -4,6 +4,7 @@ import (
 	"log"
 	"log/slog"
 	"net/http"
+	"os"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/logging"
 	"social-media-backend/internal/network"
@@ -20,10 +21,11 @@ import (
 )
 
 type application struct {
-	router *gin.Engine
-	addr   string
-	db     *pgxpool.Pool
-	rdb    *redis.Client
+	router  *gin.Engine
+	addr    string
+	db      *pgxpool.Pool
+	rdb     *redis.Client
+	logFile *os.File
 }
 
 func (a *application) mount() {
@@ -44,14 +46,13 @@ func (a *application) mount() {
 	a.router.GET("/health", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "Status Is Available")
 	})
-
 	queries := db.New(a.db)
 	logger := logging.NewLogger(logging.LoggerConfig{
 		Level:  slog.LevelDebug,
 		Format: logging.JSON,
 
 		// add logging to a file later
-		// Output: file,
+		Output: a.logFile,
 	})
 
 	// repos
@@ -70,8 +71,7 @@ func (a *application) mount() {
 	// v1
 	{
 		v1 := a.router.Group("/api/v1")
-		v1.Use(network.ErrorHandler())
-		v1.Use(network.Logger(logger))
+		v1.Use(network.Logger(logger), network.ErrorHandler())
 
 		network.RegisterUserRoutes(v1, userHandler)
 		network.RegisterAuthRoutes(v1, authHandler)

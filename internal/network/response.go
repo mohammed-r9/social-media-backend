@@ -38,7 +38,9 @@ func OK(c *gin.Context, data any) {
 
 // Fail sends an error response.
 func Fail(c *gin.Context, status int, code, message string) {
-	c.JSON(status, Response{
+	c.Set("status_code", status)
+
+	c.AbortWithStatusJSON(status, Response{
 		Success: false,
 		Error:   &ErrorInfo{Code: code, Message: message},
 	})

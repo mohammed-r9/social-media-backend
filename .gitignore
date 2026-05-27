@@ -32,3 +32,5 @@ go.work.sum
 # .vscode/
 redis-data
 postgres-data
+
+*.log
