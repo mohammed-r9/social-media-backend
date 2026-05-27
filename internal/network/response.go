@@ -151,6 +151,17 @@ func mapError(err error) (int, Response) {
 			Error:   &ErrorInfo{Code: "session_not_found", Message: "session not found"},
 		}
 
+	// network layer errors
+	case errors.Is(err, errMissingAuthModeHeader):
+		return http.StatusBadRequest, Response{
+			Success: false,
+			Error:   &ErrorInfo{Code: "missing_auth_mode_header", Message: "missing auth mode header"},
+		}
+	case errors.Is(err, errInvalidAuthModeHeader):
+		return http.StatusBadRequest, Response{
+			Success: false,
+			Error:   &ErrorInfo{Code: "invalid_auth_mode_header", Message: "invalid auth mode header"},
+		}
 	default:
 		return http.StatusInternalServerError, Response{
 			Success: false,

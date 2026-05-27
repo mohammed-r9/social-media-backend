@@ -141,6 +141,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			"refresh_token": sessionTokens.RefreshToken,
 			"session_id":    sessionTokens.SessionID,
 		})
+	default:
+		_ = c.Error(errInvalidAuthModeHeader)
+		return
 	}
 }
 

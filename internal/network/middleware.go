@@ -19,7 +19,7 @@ func ErrorHandler() gin.HandlerFunc {
 
 		status, resp := mapError(err)
 
-		c.JSON(status, resp)
+		Fail(c, status, resp.Error.Code, resp.Error.Message)
 	}
 }
 
