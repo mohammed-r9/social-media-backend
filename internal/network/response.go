@@ -127,6 +127,16 @@ func mapError(err error) (int, Response) {
 			Success: false,
 			Error:   &ErrorInfo{Code: "invalid_token", Message: "token is invalid"},
 		}
+	case errors.Is(err, errInvalidAccessToken):
+		return http.StatusUnauthorized, Response{
+			Success: false,
+			Error:   &ErrorInfo{Code: "invalid_acess_token", Message: "access token is invalid"},
+		}
+	case errors.Is(err, errMissingAccessToken):
+		return http.StatusUnauthorized, Response{
+			Success: false,
+			Error:   &ErrorInfo{Code: "missing_acess_token", Message: "access token is missing"},
+		}
 
 	// session errors
 	case errors.Is(err, domain.ErrSessionExpired):

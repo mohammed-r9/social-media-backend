@@ -21,7 +21,7 @@ import (
 )
 
 type application struct {
-	router  *gin.Engine
+	engine  *gin.Engine
 	addr    string
 	db      *pgxpool.Pool
 	rdb     *redis.Client
@@ -29,13 +29,13 @@ type application struct {
 }
 
 func (a *application) mount() {
-	a.router.Use(func(c *gin.Context) {
+	a.engine.Use(func(c *gin.Context) {
 		id := uuid.New().String()
 		c.Writer.Header().Set("X-Request-ID", id)
 		c.Set("request_id", id)
 		c.Next()
 	})
-	a.router.Use(cors.New(cors.Config{
+	a.engine.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-CSRF-Token", "X-Auth-Mode"},
@@ -43,7 +43,7 @@ func (a *application) mount() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	a.router.GET("/health", func(ctx *gin.Context) {
+	a.engine.GET("/health", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "Status Is Available")
 	})
 	queries := db.New(a.db)
@@ -51,7 +51,6 @@ func (a *application) mount() {
 		Level:  slog.LevelDebug,
 		Format: logging.JSON,
 
-		// add logging to a file later
 		Output: a.logFile,
 	})
 
@@ -70,7 +69,7 @@ func (a *application) mount() {
 
 	// v1
 	{
-		v1 := a.router.Group("/api/v1")
+		v1 := a.engine.Group("/api/v1")
 		v1.Use(network.Logger(logger), network.ErrorHandler())
 
 		network.RegisterUserRoutes(v1, userHandler)
@@ -80,5 +79,5 @@ func (a *application) mount() {
 
 func (a *application) run() error {
 	log.Printf("Server Has Started At Addr %s", a.addr)
-	return a.router.Run(a.addr)
+	return a.engine.Run(a.addr)
 }

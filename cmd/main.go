@@ -36,7 +36,7 @@ func main() {
 		addr:    fmt.Sprintf(":%d", port),
 		db:      database.NewDb(),
 		rdb:     database.NewRedisClient(),
-		router:  gin.Default(),
+		engine:  gin.Default(),
 		logFile: logFile,
 	}
 

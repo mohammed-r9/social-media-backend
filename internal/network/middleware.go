@@ -3,6 +3,8 @@ package network
 import (
 	"fmt"
 	"log/slog"
+	"social-media-backend/internal/crypto/tokens"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,8 +31,7 @@ func Logger(logger *slog.Logger) gin.HandlerFunc {
 	   Planned logger improvements:
 
 	   HIGH PRIORITY:
-	   - request_id
-	   - user_id
+	   - user_id => How would I do that?
 
 	   MEDIUM PRIORITY:
 	   - session_id
@@ -55,7 +56,6 @@ func Logger(logger *slog.Logger) gin.HandlerFunc {
 		if v, ok := c.Get("status_code"); ok {
 			status = v.(int)
 		}
-		fmt.Printf("status is: %v\n", status)
 
 		errs := c.Errors.ByType(gin.ErrorTypeAny)
 
@@ -76,5 +76,33 @@ func Logger(logger *slog.Logger) gin.HandlerFunc {
 		}
 
 		logger.Info("request", attrs...)
+	}
+}
+
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+
+		if authHeader == "" {
+			_ = c.Error(errMissingAuthorizationHeader)
+			return
+		}
+
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+
+		if token == "" {
+			_ = c.Error(errMissingAccessToken)
+			return
+		}
+
+		claims, err := tokens.VerifyAccessToken(token)
+		if err != nil {
+			_ = c.Error(errInvalidAccessToken)
+			return
+		}
+
+		c.Set(ctxClaimKey, claims)
+
+		c.Next()
 	}
 }

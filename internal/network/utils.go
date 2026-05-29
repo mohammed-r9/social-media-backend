@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const ctxClaimKey = "jwt_claims"
+
 type refreshTokens struct {
 	SessionID    string
 	RefreshToken string
@@ -50,4 +52,15 @@ func refreshGetTokensFromBody(c *gin.Context) (refreshTokens, error) {
 		RefreshToken: req.RefreshToken,
 		CsrfToken:    nil,
 	}, nil
+}
+
+// get the calims from the gin context
+func getClaims(c *gin.Context) (tokens.AccessTokenClaims, bool) {
+	v, ok := c.Get(ctxClaimKey)
+	if !ok {
+		return tokens.AccessTokenClaims{}, false
+	}
+
+	claims, ok := v.(tokens.AccessTokenClaims)
+	return claims, ok
 }
