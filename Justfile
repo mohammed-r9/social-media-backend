@@ -1,14 +1,35 @@
 set dotenv-load
-migrations := "./migrations"
+
+migrations_dir := "./migrations"
+
+export GOOSE_DRIVER := "postgres"
+export GOOSE_DBSTRING := env("POSTGRES_CONNECTION")
+export GOOSE_MIGRATION_DIR := migrations_dir
+
+goose := "goose"
 
 dev:
-	@go run ./cmd/*.go
+    @go run ./cmd/*.go
 
 build:
-	@go build -o bin/app ./cmd
+    @go build -o bin/app ./cmd
 
 live:
-	@watchexec --restart -- go run ./cmd/*.go
+    @watchexec --restart -- go run ./cmd/*.go
 
-migrate action:
-	@goose -dir {{migrations}} postgres "$POSTGRES_CONNECTION" {{action}}
+db-up:
+    @{{ goose }} up
+
+[confirm("Rollback migrations down to the last version? (y/N): ")]
+db-down:
+	@{{ goose }} down
+
+[confirm("Rollback migrations down to the specified version? (y/N): ")]
+db-down-to version:
+	{{ goose }} down-to {{version }}
+
+db-status:
+	@{{ goose }} status
+
+db-create name:
+	@{{ goose }} -s create {{ name }} sql
