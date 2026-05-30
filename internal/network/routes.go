@@ -18,5 +18,6 @@ func RegisterAuthRoutes(r *gin.RouterGroup, h *AuthHandler) {
 		auth.POST("refresh", h.RefreshAccessToken)
 		auth.POST("forgot-password", h.ForgotPassword)
 		auth.POST("reset-password", h.ResetPassword)
+		auth.GET("verify-email", h.VerifyUserEmail)
 	}
 }
