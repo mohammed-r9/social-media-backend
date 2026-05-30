@@ -1,0 +1,332 @@
+definitions:
+  domain.AuthTokens:
+    properties:
+      accessToken:
+        type: string
+      csrfToken:
+        type: string
+      refreshToken:
+        type: string
+      sessionID:
+        type: string
+    type: object
+  domain.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      isSuspended:
+        type: boolean
+      name:
+        type: string
+      passwordHash:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+      verifiedAt:
+        type: string
+    type: object
+  network.ErrorInfo:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  network.Meta:
+    properties:
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  network.Response:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/network.ErrorInfo'
+      meta:
+        $ref: '#/definitions/network.Meta'
+      success:
+        type: boolean
+    type: object
+  network.createUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - name
+    - password
+    - username
+    type: object
+  network.forgotPassowrdRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  network.loginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  network.refreshTokenReq:
+    properties:
+      refresh_token:
+        type: string
+      session_id:
+        type: string
+    required:
+    - refresh_token
+    - session_id
+    type: object
+  network.resetPasswordRequest:
+    properties:
+      password:
+        type: string
+      token:
+        type: string
+    required:
+    - password
+    - token
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Send a password reset link to the user's email.
+      parameters:
+      - description: Email
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/network.forgotPassowrdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/network.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      summary: Forgot password
+      tags:
+      - auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user and return access/refresh tokens.
+      parameters:
+      - description: Auth mode (cookie or token)
+        in: header
+        name: X-Auth-Mode
+        required: true
+        type: string
+      - description: Login Credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/network.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/network.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.AuthTokens'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      summary: Login user
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get a new access token using a valid refresh token.
+      parameters:
+      - description: Refresh tokens (if not using cookies)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/network.refreshTokenReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/network.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      summary: Refresh access token
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user account with the provided details.
+      parameters:
+      - description: Registration Details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/network.createUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      summary: Register a new user
+      tags:
+      - auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset user password using a valid reset token.
+      parameters:
+      - description: New Password and Token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/network.resetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/network.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      summary: Reset password
+      tags:
+      - auth
+  /auth/verify-email:
+    get:
+      description: Verify a user's email address using a token sent via email.
+      parameters:
+      - description: Verification Token
+        in: query
+        name: t
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/network.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      summary: Verify user email
+      tags:
+      - auth
+swagger: "2.0"

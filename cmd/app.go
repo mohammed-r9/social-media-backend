@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"social-media-backend/docs"
+	_ "social-media-backend/docs"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/logging"
 	"social-media-backend/internal/network"
@@ -18,6 +20,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type application struct {
@@ -46,6 +50,9 @@ func (a *application) mount() {
 	a.engine.GET("/health", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "Status Is Available")
 	})
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	a.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+
 	queries := db.New(a.db)
 	logger := logging.NewLogger(logging.LoggerConfig{
 		Level:  slog.LevelDebug,

@@ -35,6 +35,7 @@ func refreshGetTokensFromCookies(c *gin.Context) (refreshTokens, error) {
 	}, nil
 }
 
+// refreshTokenReq represents the refresh token request body.
 type refreshTokenReq struct {
 	SessionID    string `json:"session_id" binding:"required"`
 	RefreshToken string `json:"refresh_token" binding:"required"`

@@ -20,7 +20,7 @@ live:
 db-up:
     @{{ goose }} up
 
-[confirm("Rollback migrations down to the last version? (y/N): ")]
+[confirm("Rollback migrations down by one version? (y/N): ")]
 db-down:
 	@{{ goose }} down
 

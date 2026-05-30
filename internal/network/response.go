@@ -2,11 +2,13 @@ package network
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"social-media-backend/internal/crypto/tokens"
 	"social-media-backend/internal/domain"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type Response struct {
@@ -47,6 +49,34 @@ func Fail(c *gin.Context, status int, code, message string) {
 }
 
 func mapError(err error) (int, Response) {
+	// request body validation error
+	if ve, ok := errors.AsType[validator.ValidationErrors](err); ok {
+		err := ""
+
+		for _, fe := range ve {
+			field := fe.Field()
+			fmt.Println(field)
+			switch fe.Tag() {
+			case "required":
+				err = field + " " + "is required"
+			case "email":
+				err = field + " " + "must be a valid email"
+			case "min":
+				err = field + " " + "is too short"
+			case "max":
+				err = field + " " + "is too long"
+			default:
+				err = field + " " + "is invalid"
+			}
+		}
+
+		return http.StatusBadRequest, Response{
+			Success: false,
+			Error: &ErrorInfo{
+				Code:    "validation_error",
+				Message: err,
+			}}
+	}
 	switch {
 	// user errors
 	case errors.Is(err, domain.ErrUserNotFound):
