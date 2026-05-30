@@ -34,13 +34,6 @@ ON blocks(blocked_id);
 
 -- +goose DOWN
 -- +goose StatementBegin
-DROP TABLE follows;
-DROP TABLE blocks;
-
-DROP INDEX idx_follows_follower_id;
-DROP INDEX idx_follows_following_id;
-DROP INDEX idx_follows_following_created_at;
-DROP INDEX idx_blocks_blocker_id;
-DROP INDEX idx_blocks_blocked_id;
-
+DROP TABLE IF EXISTS follows;
+DROP TABLE IF EXISTS blocks;
 -- +goose StatementEnd
