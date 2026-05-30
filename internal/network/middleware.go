@@ -1,7 +1,6 @@
 package network
 
 import (
-	"fmt"
 	"log/slog"
 	"social-media-backend/internal/crypto/tokens"
 	"strings"

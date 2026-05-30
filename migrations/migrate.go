@@ -8,6 +8,7 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+// Deprecated: Use manual migraions indtead
 func MigrateFS(db *sql.DB, migrationsFS fs.FS, dir string) error {
 	goose.SetBaseFS(migrationsFS)
 	defer goose.SetBaseFS(nil)

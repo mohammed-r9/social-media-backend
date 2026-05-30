@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"social-media-backend/internal/env"
-	"social-media-backend/migrations"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -31,9 +30,9 @@ func NewDb() *pgxpool.Pool {
 		}
 	}()
 
-	if err := migrations.MigrateFS(stdDB, migrations.FS, "."); err != nil {
-		log.Fatalf("Failed migrations: %v", err)
-	}
+	// if err := migrations.MigrateFS(stdDB, migrations.FS, "."); err != nil {
+	// 	log.Fatalf("Failed migrations: %v", err)
+	// }
 
 	return pool
 }
