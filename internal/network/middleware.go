@@ -9,7 +9,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ErrorHandler() gin.HandlerFunc {
+type Middlewares struct {
+	Auth   gin.HandlerFunc
+	Logger gin.HandlerFunc
+	Error  gin.HandlerFunc
+}
+
+func InitMiddlwares(jwtKey []byte, l *slog.Logger) *Middlewares {
+	return &Middlewares{
+		Auth:   authMiddleware(jwtKey),
+		Logger: logger(l),
+		Error:  errorHandler(),
+	}
+}
+
+func errorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
@@ -25,7 +39,7 @@ func ErrorHandler() gin.HandlerFunc {
 	}
 }
 
-func Logger(logger *slog.Logger) gin.HandlerFunc {
+func logger(logger *slog.Logger) gin.HandlerFunc {
 	/*
 	   Planned logger improvements:
 
@@ -78,7 +92,7 @@ func Logger(logger *slog.Logger) gin.HandlerFunc {
 	}
 }
 
-func AuthMiddleware() gin.HandlerFunc {
+func authMiddleware(jwtKey []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 
@@ -94,14 +108,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		claims, err := tokens.VerifyAccessToken(token)
+		claims, err := tokens.VerifyAccessToken(token, jwtKey)
 		if err != nil {
 			_ = c.Error(errInvalidAccessToken)
 			return
 		}
 
 		c.Set(ctxClaimKey, claims)
-
 		c.Next()
 	}
 }

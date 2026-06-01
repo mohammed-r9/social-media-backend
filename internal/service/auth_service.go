@@ -19,11 +19,12 @@ type AuthService struct {
 	tokenService TokenService
 	mailer       mailer.EmailService
 	logger       *slog.Logger
+	JwtKey       []byte
 }
 
 func NewAuthService(userRepo postgres.UserRepository,
 	sessionRepo postgres.SessionsRepository,
-	tokenService TokenService, logger *slog.Logger) *AuthService {
+	tokenService TokenService, logger *slog.Logger, jwtKey []byte) *AuthService {
 	return &AuthService{
 		userRepo:     userRepo,
 		sessionRepo:  sessionRepo,
@@ -31,6 +32,7 @@ func NewAuthService(userRepo postgres.UserRepository,
 		logger: logger.With(
 			"service", "user-service",
 		),
+		JwtKey: jwtKey,
 	}
 }
 
@@ -140,7 +142,7 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		return domain.AuthTokens{}, err
 	}
 
-	accessToken, err := tokens.GenerateAccessToken(user)
+	accessToken, err := tokens.GenerateAccessToken(user, s.JwtKey)
 	if err != nil {
 		return domain.AuthTokens{}, err
 	}
@@ -196,7 +198,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 	return tokens.GenerateAccessToken(domain.User{
 		ID:         dto.Session.UserID,
 		VerifiedAt: dto.User.VerifiedAt,
-	})
+	}, s.JwtKey)
 }
 
 func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {

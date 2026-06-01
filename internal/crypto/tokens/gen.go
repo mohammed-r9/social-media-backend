@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"social-media-backend/internal/domain"
-	"social-media-backend/internal/env"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,7 +12,7 @@ import (
 	"github.com/lestrrat-go/jwx/v2/jwt"
 )
 
-func GenerateAccessToken(user domain.User) (string, error) {
+func GenerateAccessToken(user domain.User, key []byte) (string, error) {
 	isVerified := user.VerifiedAt != nil
 
 	token, err := jwt.NewBuilder().
@@ -27,7 +26,7 @@ func GenerateAccessToken(user domain.User) (string, error) {
 		return "", err
 	}
 
-	signed, err := jwt.Sign(token, jwt.WithKey(jwa.HS256, env.Config.JWT_KEY))
+	signed, err := jwt.Sign(token, jwt.WithKey(jwa.HS256, key))
 	if err != nil {
 		return "", err
 	}
@@ -36,8 +35,8 @@ func GenerateAccessToken(user domain.User) (string, error) {
 }
 
 // VerifyAccessToken verifies the token and returns the claims if valid
-func VerifyAccessToken(token string) (AccessTokenClaims, error) {
-	verifiedToken, err := jwt.Parse([]byte(token), jwt.WithKey(jwa.HS256, env.Config.JWT_KEY))
+func VerifyAccessToken(token string, key []byte) (AccessTokenClaims, error) {
+	verifiedToken, err := jwt.Parse([]byte(token), jwt.WithKey(jwa.HS256, key))
 	if err != nil {
 		return AccessTokenClaims{}, err
 	}

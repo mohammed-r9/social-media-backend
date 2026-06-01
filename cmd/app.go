@@ -8,6 +8,7 @@ import (
 	"social-media-backend/docs"
 	_ "social-media-backend/docs"
 	"social-media-backend/internal/adapters/sqlc/db"
+	"social-media-backend/internal/env"
 	"social-media-backend/internal/logging"
 	"social-media-backend/internal/network"
 	"social-media-backend/internal/repo/postgres"
@@ -30,6 +31,7 @@ type application struct {
 	db      *pgxpool.Pool
 	rdb     *redis.Client
 	logFile *os.File
+	envCfg  *env.Config
 }
 
 func (a *application) mount() {
@@ -68,19 +70,25 @@ func (a *application) mount() {
 	// services
 	userSvc := service.NewUserService(postgresRepo)
 	tokenSvc := service.NewTokenService(redisRepo)
-	authSvc := service.NewAuthService(postgresRepo, postgresRepo, *tokenSvc, logger)
+	authSvc := service.NewAuthService(postgresRepo, postgresRepo, *tokenSvc, logger, a.envCfg.JWTKey)
 
 	// handlers
 	userHandler := network.NewUserHandler(userSvc)
 	authHandler := network.NewAuthHandler(authSvc)
 
+	// network
+	mw := network.InitMiddlwares(a.envCfg.JWTKey, logger)
+
 	// v1
 	{
 		v1 := a.engine.Group("/api/v1")
-		v1.Use(network.Logger(logger), network.ErrorHandler())
+		v1.Use(mw.Logger, mw.Error)
 
-		network.RegisterUserRoutes(v1, userHandler)
-		network.RegisterAuthRoutes(v1, authHandler)
+		router := network.NewRouter(v1, &network.Handlers{
+			UserHandler: userHandler,
+			AuthHandler: authHandler,
+		})
+		router.Register(mw)
 	}
 }
 

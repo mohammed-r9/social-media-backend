@@ -4,10 +4,15 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func NewRedisClient() *redis.Client {
+type RedisConfig struct {
+	Addr     string
+	Password string
+}
+
+func NewRedisClient(cfg RedisConfig) *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "test",
+		Addr:     cfg.Addr,
+		Password: cfg.Password,
 		DB:       0,
 	})
 

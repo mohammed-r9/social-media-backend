@@ -16,7 +16,10 @@ func main() {
 	flag.IntVar(&port, "port", 8080, "Sets The Server Port")
 	flag.Parse()
 
-	env.LoadEnv("./.env")
+	cfg, err := env.New("../.env")
+	if err != nil {
+		log.Fatalf("error initializing env config: %v\n", err)
+	}
 
 	logFile, err := os.OpenFile(
 		"app.log",
@@ -33,11 +36,15 @@ func main() {
 		}
 	}()
 	app := application{
-		addr:    fmt.Sprintf(":%d", port),
-		db:      database.NewDb(),
-		rdb:     database.NewRedisClient(),
+		addr: fmt.Sprintf(":%d", port),
+		db:   database.NewDb(cfg.POSTGRES_CONNECTION),
+		rdb: database.NewRedisClient(database.RedisConfig{
+			Addr:     cfg.REDIS_ADDR,
+			Password: cfg.REDIS_PASSWORD,
+		}),
 		engine:  gin.Default(),
 		logFile: logFile,
+		envCfg:  cfg,
 	}
 
 	app.mount()

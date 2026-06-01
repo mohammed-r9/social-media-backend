@@ -3,18 +3,17 @@ package database
 import (
 	"context"
 	"log"
-	"social-media-backend/internal/env"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 )
 
-func NewDb() *pgxpool.Pool {
+func NewDb(connectionStr string) *pgxpool.Pool {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, env.Config.POSTGRES_CONNECTION)
+	pool, err := pgxpool.New(ctx, connectionStr)
 	if err != nil {
 		log.Fatalf("Failed to create pool: %v", err)
 	}

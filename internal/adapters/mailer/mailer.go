@@ -1,8 +1,6 @@
 package mailer
 
 import (
-	"social-media-backend/internal/env"
-
 	"github.com/resend/resend-go/v3"
 )
 
@@ -10,9 +8,9 @@ type ResendMailer struct {
 	client *resend.Client
 }
 
-func NewResendMailer() *ResendMailer {
+func NewResendMailer(apiKey string) *ResendMailer {
 	return &ResendMailer{
-		client: resend.NewClient(env.Config.RESEND_API_KEY),
+		client: resend.NewClient(apiKey),
 	}
 }
 
