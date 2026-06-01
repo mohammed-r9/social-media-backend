@@ -115,11 +115,10 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domai
 			FollowingCount: utils.PgBigIntToInt64(user.FollowingCount),
 			PostCount:      utils.PgBigIntToInt64(user.PostsCount),
 		},
-		Username:     user.Username,
-		Phone:        utils.NullStringToString(user.Phone),
-		PasswordHash: user.PasswordHash,
-		IsSuspended:  user.IsSuspended,
-		VerifiedAt:   user.VerifiedAt,
+		Username:    user.Username,
+		Phone:       utils.NullStringToString(user.Phone),
+		IsSuspended: user.IsSuspended,
+		VerifiedAt:  user.VerifiedAt,
 	}, nil
 }
 

@@ -101,7 +101,6 @@ SELECT
     u.id,
     u.email,
     u.username,
-    u.password_hash,
     u.verified_at,
     u.created_at,
     u.updated_at,
@@ -127,7 +126,6 @@ type GetUserByIDRow struct {
 	ID               uuid.UUID   `json:"id"`
 	Email            string      `json:"email"`
 	Username         string      `json:"username"`
-	PasswordHash     string      `json:"-"`
 	VerifiedAt       *time.Time  `json:"verified_at"`
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`
@@ -151,7 +149,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 		&i.ID,
 		&i.Email,
 		&i.Username,
-		&i.PasswordHash,
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,

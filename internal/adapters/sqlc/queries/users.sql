@@ -24,7 +24,6 @@ SELECT
     u.id,
     u.email,
     u.username,
-    u.password_hash,
     u.verified_at,
     u.created_at,
     u.updated_at,
