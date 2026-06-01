@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL CHECK (length(trim(email)) > 0),
 	username TEXT UNIQUE NOT NULL CHECK (length(trim(email)) > 0),
 	phone TEXT UNIQUE DEFAULT NULL,
-    name TEXT NOT NULL CHECK (length(trim(name)) > 0),
     is_suspended BOOL NOT NULL DEFAULT false,
     password_hash TEXT NOT NULL CHECK (octet_length(password_hash) > 0),
     verified_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,

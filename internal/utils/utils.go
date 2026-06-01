@@ -8,3 +8,10 @@ func NullStringToString(ns pgtype.Text) string {
 	}
 	return ""
 }
+
+func PgBigIntToInt64(v pgtype.Int8) int64 {
+	if v.Valid {
+		return v.Int64
+	}
+	return 0
+}

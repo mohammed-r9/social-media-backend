@@ -1,11 +1,11 @@
 -- name: CreateUser :one
 INSERT INTO users (
-	id, email, name, password_hash, username 
-) VALUES ( @id, @email, @name, @password_hash, @username )
-RETURNING id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone;
+	id, email, password_hash, username 
+) VALUES ( @id, @email, @password_hash, @username )
+RETURNING id, email, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone;
 
 -- name: GetUserByEmail :one
-SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
+SELECT id, email, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
 FROM users
 WHERE email = @email;
 
@@ -20,6 +20,27 @@ UPDATE users
 	WHERE id = @id;
 
 -- name: GetUserByID :one
-SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
-FROM users
-WHERE id = @id;
+SELECT
+    u.id,
+    u.email,
+    u.username,
+    u.password_hash,
+    u.verified_at,
+    u.created_at,
+    u.updated_at,
+    u.is_suspended,
+    u.phone,
+
+    p.display_name,
+    p.bio,
+    p.avatar_key,
+    p.website,
+    p.followers_count,
+    p.following_count,
+    p.posts_count,
+    p.created_at AS profile_created_at,
+    p.updated_at AS profile_updated_at
+
+FROM users u
+LEFT JOIN profiles p ON p.user_id = u.id
+WHERE u.id = @id;

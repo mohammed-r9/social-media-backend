@@ -32,6 +32,19 @@ type Permission struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type Profile struct {
+	UserID         uuid.UUID   `json:"user_id"`
+	DisplayName    string      `json:"display_name"`
+	Bio            pgtype.Text `json:"bio"`
+	AvatarKey      pgtype.Text `json:"avatar_key"`
+	Website        pgtype.Text `json:"website"`
+	FollowersCount int64       `json:"followers_count"`
+	FollowingCount int64       `json:"following_count"`
+	PostsCount     int64       `json:"posts_count"`
+	CreatedAt      time.Time   `json:"created_at"`
+	UpdatedAt      time.Time   `json:"updated_at"`
+}
+
 type Role struct {
 	ID        int32     `json:"id"`
 	Name      string    `json:"name"`
@@ -61,7 +74,6 @@ type User struct {
 	Email        string      `json:"email"`
 	Username     string      `json:"username"`
 	Phone        pgtype.Text `json:"phone"`
-	Name         string      `json:"name"`
 	IsSuspended  bool        `json:"is_suspended"`
 	PasswordHash string      `json:"-"`
 	VerifiedAt   *time.Time  `json:"verified_at"`

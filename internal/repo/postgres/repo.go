@@ -1,13 +1,19 @@
 package postgres
 
-import "social-media-backend/internal/adapters/sqlc/db"
+import (
+	"social-media-backend/internal/adapters/sqlc/db"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+)
 
 type PostgresRepo struct {
-	q *db.Queries
+	q  *db.Queries
+	db *pgxpool.Pool
 }
 
-func NewPostgresRepository(q *db.Queries) *PostgresRepo {
+func NewPostgresRepository(db *pgxpool.Pool, q *db.Queries) *PostgresRepo {
 	return &PostgresRepo{
-		q: q,
+		q:  q,
+		db: db,
 	}
 }

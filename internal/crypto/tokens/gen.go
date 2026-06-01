@@ -21,6 +21,7 @@ func GenerateAccessToken(user domain.User, key []byte) (string, error) {
 		Expiration(time.Now().Add(ACCESS_TOKEN_TTL)).
 		Subject(user.ID.String()).
 		Claim("is_email_verified", isVerified).
+		Claim("username", user.Username).
 		Build()
 	if err != nil {
 		return "", err

@@ -24,8 +24,8 @@ var (
 type CreateUserParams struct {
 	ID           uuid.UUID
 	Email        string
-	Name         string
 	Username     string
+	Name         string
 	PasswordHash string
 }
 
@@ -38,9 +38,19 @@ type User struct {
 	ID           uuid.UUID
 	Email        string
 	Username     string
-	Name         string
 	Phone        string
-	PasswordHash string
+	PasswordHash string `json:"-"`
 	IsSuspended  bool
 	VerifiedAt   *time.Time
+	Profile      Profile
+}
+
+type Profile struct {
+	DisplayName    string
+	Bio            string
+	AvatarUrl      string
+	Website        string
+	FollowerCount  int64
+	FollowingCount int64
+	PostCount      int64
 }

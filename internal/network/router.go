@@ -2,7 +2,9 @@ package network
 
 // TODO: use google wire instead to manage dependency injection
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 type Handlers struct {
 	UserHandler *UserHandler
@@ -21,11 +23,10 @@ func NewRouter(r *gin.RouterGroup, h *Handlers) *Router {
 }
 
 func (r *Router) Register(mw *Middlewares) {
-	api := r.router.Group("/api")
 
-	registerAuthRoutes(api, r.handlers.AuthHandler)
+	registerAuthRoutes(r.router, r.handlers.AuthHandler)
 	// TODO: inject auth mw into users
-	registerUserRoutes(api, r.handlers.UserHandler)
+	registerUserRoutes(r.router, r.handlers.UserHandler)
 }
 
 func registerUserRoutes(r *gin.RouterGroup, h *UserHandler) {

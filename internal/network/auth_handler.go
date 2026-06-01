@@ -58,7 +58,6 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		PassowrdPlainText: req.Password,
 		Username:          req.Username,
 	})
-	// verification email is yet to be added here
 
 	if err != nil {
 		log.Printf("request failed: %v", err)

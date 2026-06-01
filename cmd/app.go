@@ -41,6 +41,7 @@ func (a *application) mount() {
 		c.Set("request_id", id)
 		c.Next()
 	})
+
 	a.engine.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
@@ -52,6 +53,7 @@ func (a *application) mount() {
 	a.engine.GET("/health", func(ctx *gin.Context) {
 		ctx.String(http.StatusOK, "Status Is Available")
 	})
+
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	a.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
@@ -64,7 +66,7 @@ func (a *application) mount() {
 	})
 
 	// repos
-	postgresRepo := postgres.NewPostgresRepository(queries)
+	postgresRepo := postgres.NewPostgresRepository(a.db, queries)
 	redisRepo := rdrepo.NewRedisRepository(a.rdb)
 
 	// services

@@ -15,15 +15,14 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-	id, email, name, password_hash, username 
-) VALUES ( $1, $2, $3, $4, $5 )
-RETURNING id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone
+	id, email, password_hash, username 
+) VALUES ( $1, $2, $3, $4 )
+RETURNING id, email, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone
 `
 
 type CreateUserParams struct {
 	ID           uuid.UUID `json:"id"`
 	Email        string    `json:"email"`
-	Name         string    `json:"name"`
 	PasswordHash string    `json:"-"`
 	Username     string    `json:"username"`
 }
@@ -31,7 +30,6 @@ type CreateUserParams struct {
 type CreateUserRow struct {
 	ID           uuid.UUID   `json:"id"`
 	Email        string      `json:"email"`
-	Name         string      `json:"name"`
 	Username     string      `json:"username"`
 	PasswordHash string      `json:"-"`
 	VerifiedAt   *time.Time  `json:"verified_at"`
@@ -45,7 +43,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	row := q.db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.Email,
-		arg.Name,
 		arg.PasswordHash,
 		arg.Username,
 	)
@@ -53,7 +50,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
-		&i.Name,
 		&i.Username,
 		&i.PasswordHash,
 		&i.VerifiedAt,
@@ -66,7 +62,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateU
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
+SELECT id, email, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
 FROM users
 WHERE email = $1
 `
@@ -74,7 +70,6 @@ WHERE email = $1
 type GetUserByEmailRow struct {
 	ID           uuid.UUID   `json:"id"`
 	Email        string      `json:"email"`
-	Name         string      `json:"name"`
 	Username     string      `json:"username"`
 	PasswordHash string      `json:"-"`
 	VerifiedAt   *time.Time  `json:"verified_at"`
@@ -90,7 +85,6 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
-		&i.Name,
 		&i.Username,
 		&i.PasswordHash,
 		&i.VerifiedAt,
@@ -103,22 +97,51 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEm
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, email, name, username, password_hash, verified_at, created_at, updated_at, is_suspended, phone 
-FROM users
-WHERE id = $1
+SELECT
+    u.id,
+    u.email,
+    u.username,
+    u.password_hash,
+    u.verified_at,
+    u.created_at,
+    u.updated_at,
+    u.is_suspended,
+    u.phone,
+
+    p.display_name,
+    p.bio,
+    p.avatar_key,
+    p.website,
+    p.followers_count,
+    p.following_count,
+    p.posts_count,
+    p.created_at AS profile_created_at,
+    p.updated_at AS profile_updated_at
+
+FROM users u
+LEFT JOIN profiles p ON p.user_id = u.id
+WHERE u.id = $1
 `
 
 type GetUserByIDRow struct {
-	ID           uuid.UUID   `json:"id"`
-	Email        string      `json:"email"`
-	Name         string      `json:"name"`
-	Username     string      `json:"username"`
-	PasswordHash string      `json:"-"`
-	VerifiedAt   *time.Time  `json:"verified_at"`
-	CreatedAt    time.Time   `json:"created_at"`
-	UpdatedAt    time.Time   `json:"updated_at"`
-	IsSuspended  bool        `json:"is_suspended"`
-	Phone        pgtype.Text `json:"phone"`
+	ID               uuid.UUID   `json:"id"`
+	Email            string      `json:"email"`
+	Username         string      `json:"username"`
+	PasswordHash     string      `json:"-"`
+	VerifiedAt       *time.Time  `json:"verified_at"`
+	CreatedAt        time.Time   `json:"created_at"`
+	UpdatedAt        time.Time   `json:"updated_at"`
+	IsSuspended      bool        `json:"is_suspended"`
+	Phone            pgtype.Text `json:"phone"`
+	DisplayName      pgtype.Text `json:"display_name"`
+	Bio              pgtype.Text `json:"bio"`
+	AvatarKey        pgtype.Text `json:"avatar_key"`
+	Website          pgtype.Text `json:"website"`
+	FollowersCount   pgtype.Int8 `json:"followers_count"`
+	FollowingCount   pgtype.Int8 `json:"following_count"`
+	PostsCount       pgtype.Int8 `json:"posts_count"`
+	ProfileCreatedAt *time.Time  `json:"profile_created_at"`
+	ProfileUpdatedAt *time.Time  `json:"profile_updated_at"`
 }
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
@@ -127,7 +150,6 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 	err := row.Scan(
 		&i.ID,
 		&i.Email,
-		&i.Name,
 		&i.Username,
 		&i.PasswordHash,
 		&i.VerifiedAt,
@@ -135,6 +157,15 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 		&i.UpdatedAt,
 		&i.IsSuspended,
 		&i.Phone,
+		&i.DisplayName,
+		&i.Bio,
+		&i.AvatarKey,
+		&i.Website,
+		&i.FollowersCount,
+		&i.FollowingCount,
+		&i.PostsCount,
+		&i.ProfileCreatedAt,
+		&i.ProfileUpdatedAt,
 	)
 	return i, err
 }

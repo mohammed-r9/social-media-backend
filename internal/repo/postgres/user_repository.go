@@ -24,14 +24,21 @@ type UserRepository interface {
 var _ UserRepository = (*PostgresRepo)(nil)
 
 func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error) {
-	user, err := r.q.CreateUser(ctx, db.CreateUserParams{
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return domain.User{}, fmt.Errorf("begin tx: %w", err)
+	}
+
+	defer tx.Rollback(ctx)
+
+	qtx := r.q.WithTx(tx)
+
+	user, err := qtx.CreateUser(ctx, db.CreateUserParams{
 		ID:           params.ID,
 		Email:        params.Email,
 		PasswordHash: params.PasswordHash,
-		Name:         params.Name,
 		Username:     params.Username,
 	})
-
 	if err != nil {
 		if pqErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 			if pqErr.Code == "23505" {
@@ -42,10 +49,22 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserP
 		return domain.User{}, fmt.Errorf("create user: %w", err)
 	}
 
+	_, err = qtx.CreateProfile(ctx, db.CreateProfileParams{
+		UserID:      user.ID,
+		DisplayName: params.Name,
+	})
+	if err != nil {
+		return domain.User{}, fmt.Errorf("create profile: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return domain.User{}, fmt.Errorf("commit tx: %w", err)
+	}
+
 	return domain.User{
 		ID:           user.ID,
 		Email:        user.Email,
-		Name:         user.Name,
+		Username:     user.Username,
 		Phone:        utils.NullStringToString(user.Phone),
 		PasswordHash: user.PasswordHash,
 		IsSuspended:  user.IsSuspended,
@@ -66,7 +85,6 @@ func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain
 	return domain.User{
 		ID:           user.ID,
 		Email:        user.Email,
-		Name:         user.Name,
 		Username:     user.Username,
 		Phone:        utils.NullStringToString(user.Phone),
 		PasswordHash: user.PasswordHash,
@@ -86,9 +104,17 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domai
 	}
 
 	return domain.User{
-		ID:           user.ID,
-		Email:        user.Email,
-		Name:         user.Name,
+		ID:    user.ID,
+		Email: user.Email,
+		Profile: domain.Profile{
+			DisplayName:    utils.NullStringToString(user.DisplayName),
+			Bio:            utils.NullStringToString(user.Bio),
+			AvatarUrl:      utils.NullStringToString(user.AvatarKey),
+			Website:        utils.NullStringToString(user.Website),
+			FollowerCount:  utils.PgBigIntToInt64(user.FollowersCount),
+			FollowingCount: utils.PgBigIntToInt64(user.FollowingCount),
+			PostCount:      utils.PgBigIntToInt64(user.PostsCount),
+		},
 		Username:     user.Username,
 		Phone:        utils.NullStringToString(user.Phone),
 		PasswordHash: user.PasswordHash,

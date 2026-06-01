@@ -98,6 +98,7 @@ func authMiddleware(jwtKey []byte) gin.HandlerFunc {
 
 		if authHeader == "" {
 			_ = c.Error(errMissingAuthorizationHeader)
+			c.Abort()
 			return
 		}
 
@@ -105,12 +106,14 @@ func authMiddleware(jwtKey []byte) gin.HandlerFunc {
 
 		if token == "" {
 			_ = c.Error(errMissingAccessToken)
+			c.Abort()
 			return
 		}
 
 		claims, err := tokens.VerifyAccessToken(token, jwtKey)
 		if err != nil {
 			_ = c.Error(errInvalidAccessToken)
+			c.Abort()
 			return
 		}
 
