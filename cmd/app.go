@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"social-media-backend/docs"
 	_ "social-media-backend/docs"
 	"social-media-backend/internal/adapters/sqlc/db"
@@ -14,6 +16,7 @@ import (
 	"social-media-backend/internal/repo/postgres"
 	rdrepo "social-media-backend/internal/repo/redis"
 	"social-media-backend/internal/service"
+	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -95,6 +98,60 @@ func (a *application) mount() {
 }
 
 func (a *application) run() error {
-	log.Printf("Server Has Started At Addr %s", a.addr)
-	return a.engine.Run(a.addr)
+	srv := &http.Server{
+		Addr:    a.addr,
+		Handler: a.engine,
+	}
+
+	log.Printf("Server started at %s", a.addr)
+
+	serverErr := make(chan error, 1)
+	go func() {
+		serverErr <- srv.ListenAndServe()
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-serverErr:
+		return err
+
+	case sig := <-quit:
+		log.Printf("shutdown signal received: %v", sig)
+		return a.shutdown(srv)
+	}
+}
+
+func (a *application) shutdown(srv *http.Server) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	log.Println("shutting down server...")
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("http shutdown failed: %v", err)
+		_ = srv.Close()
+	}
+
+	if a.db != nil {
+		log.Println("closing postgres pool...")
+		a.db.Close()
+	}
+
+	if a.rdb != nil {
+		log.Println("closing redis client...")
+		if err := a.rdb.Close(); err != nil {
+			log.Printf("redis close error: %v", err)
+		}
+	}
+
+	if a.logFile != nil {
+		log.Println("closing log file...")
+		_ = a.logFile.Sync()
+		_ = a.logFile.Close()
+	}
+
+	log.Println("server stopped")
+	return nil
 }

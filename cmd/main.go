@@ -29,12 +29,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer func() {
-		err := logFile.Close()
-		if err != nil {
-			log.Printf("error closing log file: %v\n", err)
-		}
-	}()
+
 	app := application{
 		addr: fmt.Sprintf(":%d", port),
 		db:   database.NewDb(cfg.POSTGRES_CONNECTION),

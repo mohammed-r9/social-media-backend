@@ -5,6 +5,7 @@ import (
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
 	rdrepo "social-media-backend/internal/repo/redis"
+	"social-media-backend/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -69,7 +70,7 @@ type VerifyTokenParams struct {
 // VerifyToken verifies the token and returns a uuid of the owner if valid
 func (s *TokenService) VerifyToken(ctx context.Context, params VerifyTokenParams) (uuid.UUID, error) {
 	hash := auth.HashToken(params.TokenPlainText)
-	key := auth.RedisKeyBuilder(hash, params.Scope)
+	key := utils.RedisTokenKeyBuilder(hash, params.Scope)
 	token, err := s.repo.GetToken(ctx, key)
 	if err != nil {
 		return uuid.Nil, err
