@@ -1,7 +1,7 @@
 package network
 
 import (
-	"social-media-backend/internal/crypto/tokens"
+	"social-media-backend/internal/auth"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,15 +17,15 @@ type refreshTokens struct {
 func refreshGetTokensFromCookies(c *gin.Context) (refreshTokens, error) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
-		return refreshTokens{}, tokens.ErrMissingRefreshToken
+		return refreshTokens{}, auth.ErrMissingRefreshToken
 	}
 	sessionID, err := c.Cookie("session_id")
 	if err != nil {
-		return refreshTokens{}, tokens.ErrMissingSessionID
+		return refreshTokens{}, auth.ErrMissingSessionID
 	}
 	csrfToken := c.GetHeader("X-CSRF-Token")
 	if csrfToken == "" {
-		return refreshTokens{}, tokens.ErrMissingCsrf
+		return refreshTokens{}, auth.ErrMissingCsrf
 	}
 
 	return refreshTokens{
@@ -56,12 +56,12 @@ func refreshGetTokensFromBody(c *gin.Context) (refreshTokens, error) {
 }
 
 // get the calims from the gin context
-func getClaims(c *gin.Context) (tokens.AccessTokenClaims, bool) {
+func getClaims(c *gin.Context) (auth.AccessTokenClaims, bool) {
 	v, ok := c.Get(ctxClaimKey)
 	if !ok {
-		return tokens.AccessTokenClaims{}, false
+		return auth.AccessTokenClaims{}, false
 	}
 
-	claims, ok := v.(tokens.AccessTokenClaims)
+	claims, ok := v.(auth.AccessTokenClaims)
 	return claims, ok
 }

@@ -4,8 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"social-media-backend/internal/adapters/mailer"
-	"social-media-backend/internal/crypto/password"
-	"social-media-backend/internal/crypto/tokens"
+	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo/postgres"
 	"time"
@@ -64,7 +63,7 @@ func (s *AuthService) Register(ctx context.Context, params RegisterParams) (doma
 		return domain.User{}, domain.ErrInvalidUsername
 	}
 
-	passowrdHash, err := password.HashPassword(params.PassowrdPlainText)
+	passowrdHash, err := auth.HashPassword(params.PassowrdPlainText)
 	if err != nil {
 		log.Error("password hashing failed", "err", err)
 		return domain.User{}, err
@@ -111,7 +110,7 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		return domain.AuthTokens{}, err
 	}
 
-	isValid, err := password.ComparePassword(password.ComparePasswordParams{
+	isValid, err := auth.ComparePassword(auth.ComparePasswordParams{
 		Password:   params.Password,
 		StoredHash: user.PasswordHash,
 	})
@@ -125,9 +124,9 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		return domain.AuthTokens{}, domain.ErrInvalidCredentials
 	}
 
-	sessionTokens := tokens.GenerateSessionTokens()
+	sessionTokens := auth.GenerateSessionTokens()
 	storedHashes := sessionTokens.ToHash()
-	sessionID := tokens.GenerateSessionID()
+	sessionID := auth.GenerateSessionID()
 
 	_, err = s.sessionRepo.CreateSession(ctx, domain.CreateSessionParams{
 		ID:               sessionID,
@@ -135,14 +134,14 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		RefreshTokenHash: storedHashes.RefreshHash,
 		CsrfTokenHash:    storedHashes.CsrfHash,
 		DeviceName:       "temp",
-		ExpiresAt:        time.Now().Add(tokens.REFRESH_TTL),
+		ExpiresAt:        time.Now().Add(auth.REFRESH_TTL),
 	})
 
 	if err != nil {
 		return domain.AuthTokens{}, err
 	}
 
-	accessToken, err := tokens.GenerateAccessToken(user, s.JwtKey)
+	accessToken, err := auth.GenerateAccessToken(user, s.JwtKey)
 	if err != nil {
 		return domain.AuthTokens{}, err
 	}
@@ -176,26 +175,26 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		return "", domain.ErrSessionRevoked
 	}
 
-	isValid := tokens.CompareTokenToHash(tokens.CompareTokenToHashParams{
+	isValid := auth.CompareTokenToHash(auth.CompareTokenToHashParams{
 		PlainText:  params.RefreshToken,
 		StoredHash: dto.Session.RefreshTokenHash,
 	})
 	if !isValid {
-		return "", tokens.ErrTokenMismatch
+		return "", auth.ErrTokenMismatch
 	}
 
 	if params.CsrfToken != nil {
-		isValid = tokens.CompareTokenToHash(tokens.CompareTokenToHashParams{
+		isValid = auth.CompareTokenToHash(auth.CompareTokenToHashParams{
 			PlainText:  *params.CsrfToken,
 			StoredHash: dto.Session.CsrfTokenHash,
 		})
 
 		if !isValid {
-			return "", tokens.ErrTokenMismatch
+			return "", auth.ErrTokenMismatch
 		}
 	}
 
-	return tokens.GenerateAccessToken(domain.User{
+	return auth.GenerateAccessToken(domain.User{
 		ID:         dto.Session.UserID,
 		VerifiedAt: dto.User.VerifiedAt,
 	}, s.JwtKey)
@@ -208,7 +207,7 @@ func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
 		TokenPlainText: token,
-		Scope:          tokens.ScopeEmailVerification,
+		Scope:          auth.ScopeEmailVerification,
 	})
 	if err != nil {
 		return err
@@ -237,7 +236,7 @@ func (s *AuthService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 		return err
 	}
 
-	isMatched, err := password.ComparePassword(password.ComparePasswordParams{
+	isMatched, err := auth.ComparePassword(auth.ComparePasswordParams{
 		Password:   params.OldPassword,
 		StoredHash: user.PasswordHash,
 	})
@@ -249,7 +248,7 @@ func (s *AuthService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 		return domain.ErrInvalidOldPassword
 	}
 
-	newPasswordHash, err := password.HashPassword(params.NewPassword)
+	newPasswordHash, err := auth.HashPassword(params.NewPassword)
 	if err != nil {
 		return err
 	}
@@ -272,13 +271,13 @@ func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPas
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
 		TokenPlainText: params.Token,
-		Scope:          tokens.ScopePasswordReset,
+		Scope:          auth.ScopePasswordReset,
 	})
 	if err != nil {
 		return err
 	}
 
-	hash, err := password.HashPassword(params.NewPassword)
+	hash, err := auth.HashPassword(params.NewPassword)
 	if err != nil {
 		return err
 	}

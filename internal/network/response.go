@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"social-media-backend/internal/crypto/tokens"
+	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
 
 	"github.com/gin-gonic/gin"
@@ -140,19 +140,19 @@ func mapError(err error) (int, Response) {
 		}
 
 	// token errors
-	case errors.Is(err, tokens.ErrTokenNotFound):
+	case errors.Is(err, auth.ErrTokenNotFound):
 		return http.StatusUnauthorized, Response{
 			Success: false,
 			Error:   &ErrorInfo{Code: "token_not_found", Message: "token not found"},
 		}
 
-	case errors.Is(err, tokens.ErrExpiredToken):
+	case errors.Is(err, auth.ErrExpiredToken):
 		return http.StatusUnauthorized, Response{
 			Success: false,
 			Error:   &ErrorInfo{Code: "expired_token", Message: "token expired"},
 		}
 
-	case errors.Is(err, tokens.ErrInvalidToken):
+	case errors.Is(err, auth.ErrInvalidToken):
 		return http.StatusUnauthorized, Response{
 			Success: false,
 			Error:   &ErrorInfo{Code: "invalid_token", Message: "token is invalid"},

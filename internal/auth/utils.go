@@ -1,4 +1,4 @@
-package tokens
+package auth
 
 import (
 	"crypto/sha256"

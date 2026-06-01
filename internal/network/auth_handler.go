@@ -4,7 +4,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"social-media-backend/internal/crypto/tokens"
+	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/service"
 
@@ -144,7 +144,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.SetCookie(
 			"refresh_token",
 			sessionTokens.RefreshToken,
-			int(tokens.REFRESH_TTL),
+			int(auth.REFRESH_TTL),
 			"/",
 			"",
 			true,
@@ -152,7 +152,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		)
 		c.SetCookie("csrf_token",
 			sessionTokens.CsrfToken,
-			int(tokens.REFRESH_TTL),
+			int(auth.REFRESH_TTL),
 			"/",
 			"",
 			true,
@@ -160,7 +160,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		)
 		c.SetCookie("session_id",
 			sessionTokens.SessionID,
-			int(tokens.REFRESH_TTL),
+			int(auth.REFRESH_TTL),
 			"/",
 			"",
 			true,

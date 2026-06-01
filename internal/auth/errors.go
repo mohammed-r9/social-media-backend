@@ -1,4 +1,4 @@
-package tokens
+package auth
 
 import "errors"
 
@@ -12,4 +12,5 @@ var (
 	ErrMissingSessionID    = errors.New("missing session id")
 	ErrTokenMismatch       = errors.New("token mismatch")
 	ErrInvalidToken        = errors.New("invalid token")
+	ErrMissingClaim        = errors.New("missing claim in jwt")
 )

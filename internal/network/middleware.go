@@ -2,7 +2,7 @@ package network
 
 import (
 	"log/slog"
-	"social-media-backend/internal/crypto/tokens"
+	"social-media-backend/internal/auth"
 	"strings"
 	"time"
 
@@ -110,7 +110,7 @@ func authMiddleware(jwtKey []byte) gin.HandlerFunc {
 			return
 		}
 
-		claims, err := tokens.VerifyAccessToken(token, jwtKey)
+		claims, err := auth.VerifyAccessToken(token, jwtKey)
 		if err != nil {
 			_ = c.Error(errInvalidAccessToken)
 			c.Abort()
