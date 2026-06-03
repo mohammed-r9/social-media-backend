@@ -40,11 +40,17 @@ type LoginParams struct {
 	Password   string
 	DeviceName string
 }
+type RegisterParams struct {
+	Name              string
+	Email             string
+	Username          string
+	PasswordPlainText string
+}
 
 func (s *AuthService) Register(ctx context.Context, params RegisterParams) (domain.User, error) {
 	log := s.logger.With("op", "create_user")
 
-	if params.PassowrdPlainText == "" {
+	if params.PasswordPlainText == "" {
 		log.Warn("validation failed", "field", "password")
 		return domain.User{}, domain.ErrInvalidPassword
 	}
@@ -63,7 +69,7 @@ func (s *AuthService) Register(ctx context.Context, params RegisterParams) (doma
 		return domain.User{}, domain.ErrInvalidUsername
 	}
 
-	passowrdHash, err := auth.HashPassword(params.PassowrdPlainText)
+	passowrdHash, err := auth.HashPassword(params.PasswordPlainText)
 	if err != nil {
 		log.Error("password hashing failed", "err", err)
 		return domain.User{}, err
@@ -214,49 +220,6 @@ func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 	}
 	err = s.userRepo.VerifyUserEmail(ctx, userID)
 	return err
-}
-
-type UpdateUserPasswordParams struct {
-	UserID      uuid.UUID
-	NewPassword string
-	OldPassword string
-}
-
-func (s *AuthService) UpdateUserPassword(ctx context.Context, params UpdateUserPasswordParams) error {
-	if params.UserID == uuid.Nil {
-		return domain.ErrInvalidUserID
-	}
-
-	if params.NewPassword == params.OldPassword {
-		return domain.ErrInvalidPassword
-	}
-
-	user, err := s.userRepo.GetUserByID(ctx, params.UserID)
-	if err != nil {
-		return err
-	}
-
-	isMatched, err := auth.ComparePassword(auth.ComparePasswordParams{
-		Password:   params.OldPassword,
-		StoredHash: user.PasswordHash,
-	})
-	if err != nil {
-		return err
-	}
-
-	if !isMatched {
-		return domain.ErrInvalidOldPassword
-	}
-
-	newPasswordHash, err := auth.HashPassword(params.NewPassword)
-	if err != nil {
-		return err
-	}
-
-	return s.userRepo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
-		ID:           user.ID,
-		PasswordHash: newPasswordHash,
-	})
 }
 
 type ResetUserPasswordParams struct {

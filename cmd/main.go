@@ -11,6 +11,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//	@title		Social media API
+//	@version	1.0
+
+//	@host		localhost:8080
+//	@BasePath	/api/v1
+
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
+// @description				Type "Bearer <JWT>"
 func main() {
 	var port int
 	flag.IntVar(&port, "port", 8080, "Sets The Server Port")

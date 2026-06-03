@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createProfile = `-- name: CreateProfile :one
@@ -28,4 +29,49 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (u
 	var user_id uuid.UUID
 	err := row.Scan(&user_id)
 	return user_id, err
+}
+
+const updateUserProfile = `-- name: UpdateUserProfile :one
+UPDATE profiles
+SET bio = COALESCE($1, bio),
+    display_name = COALESCE($2, display_name),
+    avatar_key = COALESCE($3, avatar_key),
+    website = COALESCE($4, website)
+WHERE user_id = $5
+RETURNING user_id, bio, display_name, avatar_key, website
+`
+
+type UpdateUserProfileParams struct {
+	Bio         pgtype.Text `json:"bio"`
+	DisplayName pgtype.Text `json:"display_name"`
+	AvatarKey   pgtype.Text `json:"avatar_key"`
+	Website     pgtype.Text `json:"website"`
+	UserID      uuid.UUID   `json:"user_id"`
+}
+
+type UpdateUserProfileRow struct {
+	UserID      uuid.UUID   `json:"user_id"`
+	Bio         pgtype.Text `json:"bio"`
+	DisplayName string      `json:"display_name"`
+	AvatarKey   pgtype.Text `json:"avatar_key"`
+	Website     pgtype.Text `json:"website"`
+}
+
+func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UpdateUserProfileRow, error) {
+	row := q.db.QueryRow(ctx, updateUserProfile,
+		arg.Bio,
+		arg.DisplayName,
+		arg.AvatarKey,
+		arg.Website,
+		arg.UserID,
+	)
+	var i UpdateUserProfileRow
+	err := row.Scan(
+		&i.UserID,
+		&i.Bio,
+		&i.DisplayName,
+		&i.AvatarKey,
+		&i.Website,
+	)
+	return i, err
 }

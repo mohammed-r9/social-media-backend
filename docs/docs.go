@@ -360,6 +360,71 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/me/password": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows an authenticated user to change their password by providing the old password and a new password.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update user password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Type 'Bearer _JWT_'",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Password update payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/network.updatePasswordReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -380,6 +445,35 @@ const docTemplate = `{
                 }
             }
         },
+        "domain.Profile": {
+            "type": "object",
+            "properties": {
+                "avatarKey": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "followerCount": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "followingCount": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "postCount": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.User": {
             "type": "object",
             "properties": {
@@ -392,14 +486,11 @@ const docTemplate = `{
                 "isSuspended": {
                     "type": "boolean"
                 },
-                "name": {
-                    "type": "string"
-                },
-                "passwordHash": {
-                    "type": "string"
-                },
                 "phone": {
                     "type": "string"
+                },
+                "profile": {
+                    "$ref": "#/definitions/domain.Profile"
                 },
                 "username": {
                     "type": "string"
@@ -531,17 +622,40 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "network.updatePasswordReq": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "old_password"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "old_password": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer \u003cJWT\u003e\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "",
+	Title:            "Social media API",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

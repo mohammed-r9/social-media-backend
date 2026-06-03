@@ -1,8 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "title": "Social media API",
+        "contact": {},
+        "version": "1.0"
     },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
     "paths": {
         "/auth/forgot-password": {
             "post": {
@@ -349,6 +353,71 @@
                     }
                 }
             }
+        },
+        "/users/me/password": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows an authenticated user to change their password by providing the old password and a new password.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update user password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Type 'Bearer _JWT_'",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Password update payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/network.updatePasswordReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Password updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -369,6 +438,35 @@
                 }
             }
         },
+        "domain.Profile": {
+            "type": "object",
+            "properties": {
+                "avatarKey": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "displayName": {
+                    "type": "string"
+                },
+                "followerCount": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "followingCount": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "postCount": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "website": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.User": {
             "type": "object",
             "properties": {
@@ -381,14 +479,11 @@
                 "isSuspended": {
                     "type": "boolean"
                 },
-                "name": {
-                    "type": "string"
-                },
-                "passwordHash": {
-                    "type": "string"
-                },
                 "phone": {
                     "type": "string"
+                },
+                "profile": {
+                    "$ref": "#/definitions/domain.Profile"
                 },
                 "username": {
                     "type": "string"
@@ -520,6 +615,29 @@
                     "type": "string"
                 }
             }
+        },
+        "network.updatePasswordReq": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "old_password"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "old_password": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer \u003cJWT\u003e\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

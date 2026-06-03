@@ -104,6 +104,7 @@ SELECT
     u.verified_at,
     u.created_at,
     u.updated_at,
+	u.password_hash,
     u.is_suspended,
     u.phone,
 
@@ -129,6 +130,7 @@ type GetUserByIDRow struct {
 	VerifiedAt       *time.Time  `json:"verified_at"`
 	CreatedAt        time.Time   `json:"created_at"`
 	UpdatedAt        time.Time   `json:"updated_at"`
+	PasswordHash     string      `json:"-"`
 	IsSuspended      bool        `json:"is_suspended"`
 	Phone            pgtype.Text `json:"phone"`
 	DisplayName      pgtype.Text `json:"display_name"`
@@ -152,6 +154,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.PasswordHash,
 		&i.IsSuspended,
 		&i.Phone,
 		&i.DisplayName,

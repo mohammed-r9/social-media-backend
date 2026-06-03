@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"social-media-backend/docs"
 	_ "social-media-backend/docs"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/env"
@@ -57,7 +56,7 @@ func (a *application) mount() {
 		ctx.String(http.StatusOK, "Status Is Available")
 	})
 
-	docs.SwaggerInfo.BasePath = "/api/v1"
+	// docs.SwaggerInfo.BasePath = "/api/v1"
 	a.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	queries := db.New(a.db)

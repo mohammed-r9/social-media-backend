@@ -19,6 +19,7 @@ var (
 	ErrInvalidUserName     = errors.New("invalid user name")
 	ErrInvalidUsername     = errors.New("invalid username")
 	ErrNoRowsAffected      = errors.New("no rows affected")
+	ErrProfileNotFound     = errors.New("profile not found")
 )
 
 type CreateUserParams struct {
@@ -48,9 +49,17 @@ type User struct {
 type Profile struct {
 	DisplayName    string
 	Bio            string
-	AvatarUrl      string
+	AvatarKey      string
 	Website        string
 	FollowerCount  int64
 	FollowingCount int64
 	PostCount      int64
+}
+
+type UpdateProfileParams struct {
+	UserID      uuid.UUID
+	DisplayName *string
+	Bio         *string
+	Website     *string
+	AvatarKey   *string // should implement it after adding s3
 }

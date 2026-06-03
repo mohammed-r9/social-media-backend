@@ -27,6 +27,7 @@ SELECT
     u.verified_at,
     u.created_at,
     u.updated_at,
+	u.password_hash,
     u.is_suspended,
     u.phone,
 

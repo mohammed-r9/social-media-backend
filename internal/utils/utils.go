@@ -20,6 +20,16 @@ func PgBigIntToInt64(v pgtype.Int8) int64 {
 	return 0
 }
 
+func ToNullText(s *string) pgtype.Text {
+	if s == nil {
+		return pgtype.Text{Valid: false}
+	}
+	return pgtype.Text{
+		String: *s,
+		Valid:  true,
+	}
+}
+
 func RedisTokenKeyBuilder(tokenHash string, scope auth.TokenScope) string {
 	switch scope {
 	case auth.ScopePasswordReset:

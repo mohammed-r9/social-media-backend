@@ -25,14 +25,14 @@ func NewRouter(r *gin.RouterGroup, h *Handlers) *Router {
 func (r *Router) Register(mw *Middlewares) {
 
 	registerAuthRoutes(r.router, r.handlers.AuthHandler)
-	// TODO: inject auth mw into users
-	registerUserRoutes(r.router, r.handlers.UserHandler)
+	registerUserRoutes(r.router, r.handlers.UserHandler, mw.Auth)
 }
 
-func registerUserRoutes(r *gin.RouterGroup, h *UserHandler) {
+func registerUserRoutes(r *gin.RouterGroup, h *UserHandler, authMW gin.HandlerFunc) {
 	users := r.Group("/users")
 	{
-		_ = users
+		users.Use(authMW)
+		users.PUT("me/password", h.UpdateSelfPassword)
 	}
 }
 

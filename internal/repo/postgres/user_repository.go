@@ -10,6 +10,7 @@ import (
 	"social-media-backend/internal/utils"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -19,6 +20,7 @@ type UserRepository interface {
 	GetUserByID(ctx context.Context, userID uuid.UUID) (domain.User, error)
 	UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) error
 	VerifyUserEmail(ctx context.Context, userID uuid.UUID) error
+	UpdateSelfProfile(ctx context.Context, params domain.UpdateProfileParams) (domain.Profile, error)
 }
 
 var _ UserRepository = (*PostgresRepo)(nil)
@@ -109,16 +111,17 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domai
 		Profile: domain.Profile{
 			DisplayName:    utils.NullStringToString(user.DisplayName),
 			Bio:            utils.NullStringToString(user.Bio),
-			AvatarUrl:      utils.NullStringToString(user.AvatarKey),
+			AvatarKey:      utils.NullStringToString(user.AvatarKey),
 			Website:        utils.NullStringToString(user.Website),
 			FollowerCount:  utils.PgBigIntToInt64(user.FollowersCount),
 			FollowingCount: utils.PgBigIntToInt64(user.FollowingCount),
 			PostCount:      utils.PgBigIntToInt64(user.PostsCount),
 		},
-		Username:    user.Username,
-		Phone:       utils.NullStringToString(user.Phone),
-		IsSuspended: user.IsSuspended,
-		VerifiedAt:  user.VerifiedAt,
+		Username:     user.Username,
+		Phone:        utils.NullStringToString(user.Phone),
+		PasswordHash: user.PasswordHash,
+		IsSuspended:  user.IsSuspended,
+		VerifiedAt:   user.VerifiedAt,
 	}, nil
 }
 
@@ -140,4 +143,37 @@ func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) er
 		return domain.ErrUserNotFound
 	}
 	return err
+}
+
+// TODO: add s3 first to handle the avatar
+func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.UpdateProfileParams) (domain.Profile, error) {
+	if params.UserID == uuid.Nil {
+		return domain.Profile{}, domain.ErrInvalidUserID
+	}
+
+	profile, err := r.q.UpdateUserProfile(ctx, db.UpdateUserProfileParams{
+		UserID:      params.UserID,
+		Bio:         utils.ToNullText(params.Bio),
+		DisplayName: utils.ToNullText(params.DisplayName),
+		Website:     utils.ToNullText(params.Website),
+	})
+
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+
+			if errors.Is(err, pgx.ErrNoRows) {
+				return domain.Profile{}, domain.ErrProfileNotFound
+			}
+
+			return domain.Profile{}, fmt.Errorf("update user profile: %w", err)
+		}
+	}
+
+	return domain.Profile{
+		DisplayName: profile.DisplayName,
+		Bio:         utils.NullStringToString(profile.Bio),
+		Website:     utils.NullStringToString(profile.Website),
+		AvatarKey:   utils.NullStringToString(profile.AvatarKey),
+	}, nil
 }

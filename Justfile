@@ -33,3 +33,6 @@ db-status:
 
 db-create name:
 	@{{ goose }} -s create {{ name }} sql
+
+swag-gen:
+	@swag init -g main.go -d cmd,internal
