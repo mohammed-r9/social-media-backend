@@ -121,7 +121,6 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 		StoredHash: user.PasswordHash,
 	})
 
-	// TODO: ComparePassword should validate the hash format as well.
 	if err != nil {
 		return domain.AuthTokens{}, domain.ErrInvalidCredentials
 	}
