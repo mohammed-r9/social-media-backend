@@ -90,3 +90,14 @@ func (s *TokenService) VerifyToken(ctx context.Context, params VerifyTokenParams
 
 	return token.UserID, nil
 }
+
+type DeleteTokenParams struct {
+	TokenPlainText string
+	Scope          auth.TokenScope
+}
+
+func (s *TokenService) DeleteToken(ctx context.Context, params DeleteTokenParams) error {
+	hash := auth.HashToken(params.TokenPlainText)
+	key := utils.RedisTokenKeyBuilder(hash, params.Scope)
+	return s.repo.DeleteToken(ctx, key)
+}

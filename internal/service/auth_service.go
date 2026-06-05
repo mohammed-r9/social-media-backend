@@ -218,8 +218,16 @@ func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 	if err != nil {
 		return err
 	}
+
 	err = s.userRepo.VerifyUserEmail(ctx, userID)
-	return err
+	if err != nil {
+		return err
+	}
+
+	return s.tokenService.DeleteToken(ctx, DeleteTokenParams{
+		TokenPlainText: token,
+		Scope:          auth.ScopeEmailVerification,
+	})
 }
 
 type ResetUserPasswordParams struct {
@@ -245,9 +253,17 @@ func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPas
 		return err
 	}
 
-	return s.userRepo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
+	err = s.userRepo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
 		ID:           userID,
 		PasswordHash: hash,
+	})
+	if err != nil {
+		return err
+	}
+
+	return s.tokenService.DeleteToken(ctx, DeleteTokenParams{
+		TokenPlainText: params.Token,
+		Scope:          auth.ScopePasswordReset,
 	})
 }
 

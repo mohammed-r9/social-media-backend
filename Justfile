@@ -26,7 +26,7 @@ db-down:
 
 [confirm("Rollback migrations down to the specified version? (y/N): ")]
 db-down-to version:
-	{{ goose }} down-to {{version }}
+	@{{ goose }} down-to {{version }}
 
 db-status:
 	@{{ goose }} status

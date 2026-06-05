@@ -14,6 +14,7 @@ import (
 type TokenRepo interface {
 	StoreToken(ctx context.Context, params auth.StoreTokenParam) error
 	GetToken(ctx context.Context, key string) (StoredToken, error)
+	DeleteToken(ctx context.Context, key string) error
 }
 
 var _ TokenRepo = (*RedisRepo)(nil)
@@ -51,4 +52,17 @@ func (r *RedisRepo) GetToken(ctx context.Context, key string) (StoredToken, erro
 	}
 
 	return token, nil
+}
+
+func (r *RedisRepo) DeleteToken(ctx context.Context, key string) error {
+	res, err := r.c.Del(ctx, key).Result()
+	if err != nil {
+		return fmt.Errorf("redis delete failed: %w", err)
+	}
+
+	if res == 0 {
+		return auth.ErrTokenNotFound
+	}
+
+	return nil
 }
