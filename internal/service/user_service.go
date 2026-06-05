@@ -34,7 +34,6 @@ func (s *UserService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 	if params.NewPassword == params.OldPassword {
 		return domain.ErrInvalidPassword
 	}
-	log.Printf("user id is: %v\n", params.UserID)
 
 	user, err := s.repo.GetUserByID(ctx, params.UserID)
 	if err != nil {

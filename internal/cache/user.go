@@ -29,11 +29,7 @@ func NewChachedUserRepo(next repo.UserRepository, cache Cache, logger *slog.Logg
 var _ repo.UserRepository = (*CachedUserRepo)(nil)
 
 func (c *CachedUserRepo) CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error) {
-	user, err := c.next.CreateUser(ctx, params)
-	if err != nil {
-		c.logger.Error("create user failed", "err", err)
-	}
-	return user, err
+	return c.next.CreateUser(ctx, params)
 }
 
 func (c *CachedUserRepo) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
