@@ -5,16 +5,16 @@ import (
 	"log"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
-	"social-media-backend/internal/repo/postgres"
+	"social-media-backend/internal/repo"
 
 	"github.com/google/uuid"
 )
 
 type UserService struct {
-	repo postgres.UserRepository
+	repo repo.UserRepository
 }
 
-func NewUserService(repo postgres.UserRepository) *UserService {
+func NewUserService(repo repo.UserRepository) *UserService {
 	return &UserService{
 		repo: repo,
 	}
@@ -58,8 +58,13 @@ func (s *UserService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 		return err
 	}
 
-	return s.repo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
+	id, err := s.repo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
 		ID:           user.ID,
 		PasswordHash: newPasswordHash,
 	})
+	if id == uuid.Nil {
+		return domain.ErrNoRowsAffected
+	}
+
+	return err
 }

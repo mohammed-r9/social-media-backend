@@ -17,9 +17,9 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error)
 	GetUserSession(ctx context.Context, id string) (GetUserSessionRow, error)
-	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (int64, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (uuid.UUID, error)
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (UpdateUserProfileRow, error)
-	VerifyUserEmail(ctx context.Context, id uuid.UUID) (int64, error)
+	VerifyUserEmail(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 }
 
 var _ Querier = (*Queries)(nil)

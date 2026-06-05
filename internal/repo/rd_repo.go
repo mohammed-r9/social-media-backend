@@ -1,4 +1,4 @@
-package rdrepo
+package repo
 
 import (
 	"github.com/redis/go-redis/v9"

@@ -1,14 +1,12 @@
 package service
 
-import (
-	"social-media-backend/internal/repo/postgres"
-)
+import "social-media-backend/internal/repo"
 
 type SessionService struct {
-	repo postgres.SessionsRepository
+	repo repo.SessionsRepository
 }
 
-func NewSessionService(repo postgres.SessionsRepository) *SessionService {
+func NewSessionService(repo repo.SessionsRepository) *SessionService {
 	return &SessionService{
 		repo: repo,
 	}

@@ -1,4 +1,4 @@
-package postgres
+package repo
 
 import (
 	"context"
@@ -18,8 +18,8 @@ type UserRepository interface {
 	CreateUser(ctx context.Context, params domain.CreateUserParams) (domain.User, error)
 	GetUserByEmail(ctx context.Context, email string) (domain.User, error)
 	GetUserByID(ctx context.Context, userID uuid.UUID) (domain.User, error)
-	UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) error
-	VerifyUserEmail(ctx context.Context, userID uuid.UUID) error
+	UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) (uuid.UUID, error)
+	VerifyUserEmail(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
 	UpdateSelfProfile(ctx context.Context, params domain.UpdateProfileParams) (domain.Profile, error)
 }
 
@@ -125,24 +125,27 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domai
 	}, nil
 }
 
-func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) error {
-	rowsAffected, err := r.q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) (uuid.UUID, error) {
+	userID, err := r.q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
 		ID:           params.ID,
 		PasswordHash: params.PasswordHash,
 	})
 
-	if rowsAffected == 0 {
-		return domain.ErrNoRowsAffected
+	if userID == uuid.Nil {
+		return uuid.Nil, domain.ErrNoRowsAffected
 	}
-	return err
+
+	return userID, err
 }
 
-func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) error {
-	rowsAffected, err := r.q.VerifyUserEmail(ctx, userID)
-	if rowsAffected == 0 {
-		return domain.ErrUserNotFound
+func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
+	userID, err := r.q.VerifyUserEmail(ctx, userID)
+
+	if userID == uuid.Nil {
+		return uuid.Nil, domain.ErrNoRowsAffected
 	}
-	return err
+
+	return userID, err
 }
 
 // TODO: add s3 first to handle the avatar

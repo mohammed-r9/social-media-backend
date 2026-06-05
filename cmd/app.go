@@ -9,11 +9,11 @@ import (
 	"os/signal"
 	_ "social-media-backend/docs"
 	"social-media-backend/internal/adapters/sqlc/db"
+	"social-media-backend/internal/cache"
 	"social-media-backend/internal/env"
 	"social-media-backend/internal/logging"
 	"social-media-backend/internal/network"
-	"social-media-backend/internal/repo/postgres"
-	rdrepo "social-media-backend/internal/repo/redis"
+	"social-media-backend/internal/repo"
 	"social-media-backend/internal/service"
 	"syscall"
 	"time"
@@ -67,14 +67,20 @@ func (a *application) mount() {
 		Output: a.logFile,
 	})
 
-	// repos
-	postgresRepo := postgres.NewPostgresRepository(a.db, queries)
-	redisRepo := rdrepo.NewRedisRepository(a.rdb)
+	// main repos
+	postgresRepo := repo.NewPostgresRepository(a.db, queries)
+	redisRepo := repo.NewRedisRepository(a.rdb)
+	cacheRepo := cache.NewCache(a.rdb)
+
+	// domain repos
+	userRepo := cache.NewChachedUserRepo(postgresRepo, cacheRepo, logger)
 
 	// services
-	userSvc := service.NewUserService(postgresRepo)
+	userSvc := service.NewUserService(userRepo)
 	tokenSvc := service.NewTokenService(redisRepo)
-	authSvc := service.NewAuthService(postgresRepo, postgresRepo, *tokenSvc, logger, a.envCfg.JWTKey)
+
+	// session repo should be updated to use cahche later
+	authSvc := service.NewAuthService(userRepo, postgresRepo, *tokenSvc, logger, a.envCfg.JWTKey)
 
 	// handlers
 	userHandler := network.NewUserHandler(userSvc)

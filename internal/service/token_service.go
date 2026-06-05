@@ -4,7 +4,7 @@ import (
 	"context"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
-	rdrepo "social-media-backend/internal/repo/redis"
+	"social-media-backend/internal/repo"
 	"social-media-backend/internal/utils"
 	"time"
 
@@ -12,10 +12,10 @@ import (
 )
 
 type TokenService struct {
-	repo rdrepo.TokenRepo
+	repo repo.TokenRepo
 }
 
-func NewTokenService(repo rdrepo.TokenRepo) *TokenService {
+func NewTokenService(repo repo.TokenRepo) *TokenService {
 	return &TokenService{
 		repo: repo,
 	}

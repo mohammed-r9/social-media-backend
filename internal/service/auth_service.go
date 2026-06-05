@@ -6,23 +6,23 @@ import (
 	"social-media-backend/internal/adapters/mailer"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
-	"social-media-backend/internal/repo/postgres"
+	"social-media-backend/internal/repo"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type AuthService struct {
-	userRepo     postgres.UserRepository
-	sessionRepo  postgres.SessionsRepository
+	userRepo     repo.UserRepository
+	sessionRepo  repo.SessionsRepository
 	tokenService TokenService
 	mailer       mailer.EmailService
 	logger       *slog.Logger
 	JwtKey       []byte
 }
 
-func NewAuthService(userRepo postgres.UserRepository,
-	sessionRepo postgres.SessionsRepository,
+func NewAuthService(userRepo repo.UserRepository,
+	sessionRepo repo.SessionsRepository,
 	tokenService TokenService, logger *slog.Logger, jwtKey []byte) *AuthService {
 	return &AuthService{
 		userRepo:     userRepo,
@@ -219,7 +219,7 @@ func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 		return err
 	}
 
-	err = s.userRepo.VerifyUserEmail(ctx, userID)
+	_, err = s.userRepo.VerifyUserEmail(ctx, userID)
 	if err != nil {
 		return err
 	}
@@ -253,7 +253,7 @@ func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPas
 		return err
 	}
 
-	err = s.userRepo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
+	_, err = s.userRepo.UpdateUserPassword(ctx, domain.UpdatePasswordParams{
 		ID:           userID,
 		PasswordHash: hash,
 	})

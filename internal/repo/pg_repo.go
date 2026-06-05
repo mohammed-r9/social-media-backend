@@ -1,4 +1,4 @@
-package postgres
+package repo
 
 import (
 	"social-media-backend/internal/adapters/sqlc/db"

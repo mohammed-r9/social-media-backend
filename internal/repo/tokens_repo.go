@@ -1,4 +1,4 @@
-package rdrepo
+package repo
 
 import (
 	"context"

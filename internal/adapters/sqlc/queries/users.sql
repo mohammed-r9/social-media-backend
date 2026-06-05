@@ -9,15 +9,17 @@ SELECT id, email, username, password_hash, verified_at, created_at, updated_at, 
 FROM users
 WHERE email = @email;
 
--- name: UpdateUserPassword :execrows
+-- name: UpdateUserPassword :one
 UPDATE users
 	SET password_hash = @password_hash
-	WHERE id = @id;
+	WHERE id = @id
+RETURNING id;
 
--- name: VerifyUserEmail :execrows
+-- name: VerifyUserEmail :one
 UPDATE users
 	SET verified_at = CURRENT_TIMESTAMP
-	WHERE id = @id;
+	WHERE id = @id
+RETURNING id;
 
 -- name: GetUserByID :one
 SELECT
