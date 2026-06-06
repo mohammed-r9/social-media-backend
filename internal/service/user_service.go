@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo"

@@ -44,6 +44,10 @@ func (c *CachedUserRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (dom
 		return user, nil
 	}
 
+	if err != ErrCacheMiss {
+		c.logger.Warn("cache read failed", "err", err, "user_id", userID)
+	}
+
 	user, err = c.next.GetUserByID(ctx, userID)
 	if err != nil {
 		c.logger.Error("db fallback failed", "err", err, "user_id", userID)
@@ -51,21 +55,21 @@ func (c *CachedUserRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (dom
 	}
 
 	if err := c.cache.Set(ctx, keyUserByID(userID.String()), user, time.Hour); err != nil {
-		c.logger.Error("cache set failed", "err", err, "user_id", userID)
+		c.logger.Warn("cache set failed", "err", err, "user_id", userID)
 	}
 
 	return user, nil
 }
 
 func (c *CachedUserRepo) UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) (uuid.UUID, error) {
-	if err := c.cache.Delete(ctx, keyUserByID(params.ID.String())); err != nil {
-		c.logger.Error("cache delete failed", "err", err, "user_id", params.ID)
-	}
-
 	userID, err := c.next.UpdateUserPassword(ctx, params)
 	if err != nil {
 		c.logger.Error("update password failed", "err", err, "user_id", params.ID)
 		return uuid.Nil, err
+	}
+
+	if err := c.cache.Delete(ctx, keyUserByID(params.ID.String())); err != nil {
+		c.logger.Warn("cache delete failed", "err", err, "user_id", params.ID)
 	}
 
 	return userID, nil
@@ -79,21 +83,21 @@ func (c *CachedUserRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) 
 	}
 
 	if err := c.cache.Delete(ctx, keyUserByID(userID.String())); err != nil {
-		c.logger.Error("cache delete failed", "err", err, "user_id", userID)
+		c.logger.Warn("cache delete failed", "err", err, "user_id", userID)
 	}
 
 	return user, nil
 }
 
 func (c *CachedUserRepo) UpdateSelfProfile(ctx context.Context, params domain.UpdateProfileParams) (domain.Profile, error) {
-	if err := c.cache.Delete(ctx, keyUserByID(params.UserID.String())); err != nil {
-		c.logger.Error("cache delete failed", "err", err, "user_id", params.UserID)
-	}
-
 	profile, err := c.next.UpdateSelfProfile(ctx, params)
 	if err != nil {
 		c.logger.Error("update profile failed", "err", err, "user_id", params.UserID)
 		return domain.Profile{}, err
+	}
+
+	if err := c.cache.Delete(ctx, keyUserByID(params.UserID.String())); err != nil {
+		c.logger.Warn("cache delete failed", "err", err, "user_id", params.UserID)
 	}
 
 	return profile, nil

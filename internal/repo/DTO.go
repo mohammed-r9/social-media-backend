@@ -20,8 +20,3 @@ type StoredToken struct {
 	Scope     auth.TokenScope `json:"scope"`
 	ExpiresAt time.Time       `json:"expires_at"`
 }
-
-type UserUpdatedRow struct {
-	ID    uuid.UUID
-	Email string
-}

@@ -30,6 +30,9 @@ func (r *RedisCache) Set(ctx context.Context, key string, value any, ttl time.Du
 func (r *RedisCache) Get(ctx context.Context, key string, dest any) error {
 	data, err := r.c.Get(ctx, key).Bytes()
 	if err != nil {
+		if err == redis.Nil {
+			return ErrCacheMiss
+		}
 		return err
 	}
 

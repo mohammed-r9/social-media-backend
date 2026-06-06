@@ -1,9 +1,13 @@
 package cache
 
-// USER KEYS: begin
+// USER KEYS
 
 func keyUserByID(ID string) string {
 	return "user:id" + ID
 }
 
-// USER KEYS: end
+// SESSION KEYS
+
+func keySessionByID(ID string) string {
+	return "session:id" + ID
+}

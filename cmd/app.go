@@ -74,13 +74,13 @@ func (a *application) mount() {
 
 	// domain repos
 	userRepo := cache.NewChachedUserRepo(postgresRepo, cacheRepo, logger)
+	sessionRepo := cache.NewCachedSessionRepo(postgresRepo, cacheRepo, logger)
 
 	// services
 	userSvc := service.NewUserService(userRepo)
 	tokenSvc := service.NewTokenService(redisRepo)
 
-	// session repo should be updated to use cahche later
-	authSvc := service.NewAuthService(userRepo, postgresRepo, *tokenSvc, logger, a.envCfg.JWTKey)
+	authSvc := service.NewAuthService(userRepo, sessionRepo, *tokenSvc, logger, a.envCfg.JWTKey)
 
 	// handlers
 	userHandler := network.NewUserHandler(userSvc)

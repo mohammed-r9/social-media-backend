@@ -12,8 +12,8 @@ import (
 )
 
 type SessionsRepository interface {
-	CreateSession(context.Context, domain.CreateSessionParams) (domain.Session, error)
-	GetUserSession(context.Context, string) (UserSessionDTO, error)
+	CreateSession(ctx context.Context, params domain.CreateSessionParams) (domain.Session, error)
+	GetUserSession(ctx context.Context, sessionID string) (UserSessionDTO, error)
 }
 
 var _ SessionsRepository = (*PostgresRepo)(nil)
