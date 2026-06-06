@@ -157,6 +157,11 @@ func mapError(err error) (int, Response) {
 			Success: false,
 			Error:   &ErrorInfo{Code: "invalid_token", Message: "token is invalid"},
 		}
+	case errors.Is(err, auth.ErrTokenMismatch):
+		return http.StatusUnauthorized, Response{
+			Success: false,
+			Error:   &ErrorInfo{Code: "token_mismatch", Message: "token mismatch"},
+		}
 	case errors.Is(err, errInvalidAccessToken):
 		return http.StatusUnauthorized, Response{
 			Success: false,
