@@ -74,13 +74,13 @@ func logger(logger *slog.Logger) gin.HandlerFunc {
 
 		attrs := []any{
 			"request_id", reqID,
+			"timestamp", time.Now().UTC().Format(time.RFC3339Nano),
 			"method", c.Request.Method,
 			"path", c.Request.URL.Path,
 			"status", status,
 			"latency_ms", latency.Milliseconds(),
 			"ip", c.ClientIP(),
 		}
-
 		if len(errs) > 0 {
 			logger.Error("request failed",
 				append(attrs, "error", errs.Last().Err.Error())...,

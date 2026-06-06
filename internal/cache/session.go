@@ -31,30 +31,47 @@ func (c *CachedSessionRepo) CreateSession(ctx context.Context, params domain.Cre
 }
 
 func (c *CachedSessionRepo) GetUserSession(ctx context.Context, sessionID string) (repo.UserSessionDTO, error) {
-	var session repo.UserSessionDTO
+	var session domain.Session
+	var user domain.User
 
+	// session
 	err := c.cache.Get(ctx, keySessionByID(sessionID), &session)
-	if err == nil {
-		return session, nil
+	if err != nil && err != ErrCacheMiss {
+		c.logger.Warn("session cache read failed", "err", err, "session_id", sessionID)
 	}
 
-	if err != ErrCacheMiss {
-		c.logger.Warn("cache read failed", "err", err, "session_id", sessionID)
+	if err == ErrCacheMiss {
+		dto, err := c.next.GetUserSession(ctx, sessionID)
+		if err != nil {
+			c.logger.Error("db fallback failed", "err", err, "session_id", sessionID)
+			return repo.UserSessionDTO{}, err
+		}
+
+		_ = c.cache.Set(ctx, keySessionByID(sessionID), dto.Session, 24*time.Hour)
+		return dto, nil
 	}
 
-	session, err = c.next.GetUserSession(ctx, sessionID)
-	if err != nil {
-		c.logger.Error("db fallback failed", "err", err, "session_id", sessionID)
-		return repo.UserSessionDTO{}, err
+	// user
+	err = c.cache.Get(ctx, keyUserByID(session.UserID.String()), &user)
+	if err != nil && err != ErrCacheMiss {
+		c.logger.Warn("user cache read failed", "err", err, "user_id", session.UserID)
 	}
 
-	if !shouldCacheSession(session) {
-		return session, nil
+	if err == ErrCacheMiss {
+		userSession, err := c.next.GetUserSession(ctx, sessionID)
+		if err != nil {
+			c.logger.Error("user db fallback failed", "err", err, "user_id", session.UserID)
+			return repo.UserSessionDTO{}, err
+		}
+		return userSession, nil
 	}
 
-	if err := c.cache.Set(ctx, keySessionByID(sessionID), session, time.Hour*24); err != nil {
-		c.logger.Warn("cache set failed", "err", err, "session_id", sessionID)
-	}
-
-	return session, nil
+	return repo.UserSessionDTO{
+		Session: session,
+		User: struct {
+			VerifiedAt *time.Time
+		}{
+			VerifiedAt: user.VerifiedAt,
+		},
+	}, nil
 }

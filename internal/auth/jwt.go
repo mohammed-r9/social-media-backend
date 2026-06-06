@@ -13,7 +13,7 @@ func GenerateAccessToken(user domain.User, key []byte) (string, error) {
 	now := time.Now()
 
 	claims := jwt.MapClaims{
-		"iss": ISSUER,
+		"iss": JWT_ISSUER,
 		"iat": now.Unix(),
 		"exp": now.Add(ACCESS_TOKEN_TTL).Unix(),
 		"sub": user.ID.String(),
@@ -50,7 +50,7 @@ func VerifyAccessToken(tokenString string, key []byte) (AccessTokenClaims, error
 	}
 
 	iss, _ := claims["iss"].(string)
-	if iss != ISSUER {
+	if iss != JWT_ISSUER {
 		return AccessTokenClaims{}, ErrInvalidToken
 	}
 
