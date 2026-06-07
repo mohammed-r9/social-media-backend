@@ -14,3 +14,9 @@ type AppError interface {
 	Code() string
 	Status() int
 }
+
+type errorInfo struct {
+	message string
+	code    string
+	status  int
+}

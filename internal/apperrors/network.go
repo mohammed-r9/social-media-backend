@@ -9,46 +9,48 @@ const (
 	InvalidRequestBody
 )
 
+var networkErrorTable = [...]errorInfo{
+	MissingAuthModeHeader: {
+		message: "missing X-Auth-Mode header",
+		code:    "missing_auth_mode_header",
+		status:  http.StatusUnauthorized,
+	},
+	InvalidAuthModeHeader: {
+		message: "invalid X-Auth-Mode header",
+		code:    "invalid_auth_mode_header",
+		status:  http.StatusUnauthorized,
+	},
+	MissingUserClaimsInContext: {
+		message: "missing user claims in context",
+		code:    "missing_user_claims_in_context",
+		status:  http.StatusUnauthorized,
+	},
+	InvalidRequestBody: {
+		message: "invalid request body",
+		code:    "invalid_request_body",
+		status:  http.StatusBadRequest,
+	},
+}
+
 func (e NetworkError) Error() string {
-	switch e {
-	case MissingAuthModeHeader:
-		return "missing X-Auth-Mode header"
-	case InvalidAuthModeHeader:
-		return "invalid X-Auth-Mode header"
-	case MissingUserClaimsInContext:
-		return "missing user claims in context"
-	case InvalidRequestBody:
-		return "invalid request body"
-	default:
-		return "unhandled network error"
-	}
+	return e.info().message
 }
 
 func (e NetworkError) Code() string {
-	switch e {
-	case MissingAuthModeHeader:
-		return "missing_auth_mode_header"
-	case InvalidAuthModeHeader:
-		return "invalid_auth_mode_header"
-	case MissingUserClaimsInContext:
-		return "missing_user_claims_in_context"
-	case InvalidRequestBody:
-		return "invalid_request_body"
-	default:
-		return "unhandled_network_error"
-	}
+	return e.info().code
 }
+
 func (e NetworkError) Status() int {
-	switch e {
-	case MissingAuthModeHeader:
-		return http.StatusUnauthorized
-	case InvalidAuthModeHeader:
-		return http.StatusUnauthorized
-	case MissingUserClaimsInContext:
-		return http.StatusUnauthorized
-	case InvalidRequestBody:
-		return http.StatusBadRequest
-	default:
-		return http.StatusInternalServerError
+	return e.info().status
+}
+
+func (e NetworkError) info() errorInfo {
+	if int(e) < 0 || int(e) >= len(networkErrorTable) {
+		return errorInfo{
+			message: "unhandled network error",
+			code:    "unhandled_network_error",
+			status:  http.StatusInternalServerError,
+		}
 	}
+	return networkErrorTable[e]
 }

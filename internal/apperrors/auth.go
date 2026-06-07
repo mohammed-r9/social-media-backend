@@ -21,113 +21,103 @@ const (
 	MissingAuthorizationHeader
 )
 
+var authErrorTable = [...]errorInfo{
+	InvalidCredentials: {
+		message: "invalid credentials",
+		code:    "invalid_credentials",
+		status:  http.StatusUnauthorized,
+	},
+	UnverifiedUserEmail: {
+		message: "unverified user email",
+		code:    "email_not_verified",
+		status:  http.StatusForbidden,
+	},
+	InvalidOldPassword: {
+		message: "invalid user old password",
+		code:    "invalid_old_password",
+		status:  http.StatusBadRequest,
+	},
+	TokenMissmatch: {
+		message: "token missmatch",
+		code:    "token_mismatch",
+		status:  http.StatusUnauthorized,
+	},
+	InvalidToken: {
+		message: "invalid token",
+		code:    "invalid_token",
+		status:  http.StatusUnauthorized,
+	},
+	EmptyRefreshToken: {
+		message: "refresh token is empty",
+		code:    "empty_refresh_token",
+		status:  http.StatusBadRequest,
+	},
+	EmptyCsrfToken: {
+		message: "csrf token is empty",
+		code:    "empty_csrf_token",
+		status:  http.StatusBadRequest,
+	},
+	TokenNotFound: {
+		message: "token not found",
+		code:    "token_not_found",
+		status:  http.StatusUnauthorized,
+	},
+	ExpiredToken: {
+		message: "token expired",
+		code:    "expired_token",
+		status:  http.StatusUnauthorized,
+	},
+	MissingCsrf: {
+		message: "missing csrf token",
+		code:    "missing_csrf_token",
+		status:  http.StatusBadRequest,
+	},
+	MissingRefreshToken: {
+		message: "missing refresh token",
+		code:    "missing_refresh_token",
+		status:  http.StatusUnauthorized,
+	},
+	MissingSessionID: {
+		message: "missing session id",
+		code:    "missing_session_id",
+		status:  http.StatusUnauthorized,
+	},
+	MissingClaim: {
+		message: "missing claim in jwt",
+		code:    "missing_claim_in_jwt",
+		status:  http.StatusUnauthorized,
+	},
+	InvalidPassword: {
+		message: "invalid user password",
+		code:    "invalid_password",
+		status:  http.StatusBadRequest,
+	},
+	MissingAuthorizationHeader: {
+		message: "missing authorization header",
+		code:    "missing_authorization_header",
+		status:  http.StatusUnauthorized,
+	},
+}
+
 func (e AuthError) Error() string {
-	switch e {
-	case InvalidCredentials:
-		return "invalid credentials"
-	case UnverifiedUserEmail:
-		return "unverified user email"
-	case InvalidOldPassword:
-		return "invalid user old password"
-	case TokenMissmatch:
-		return "token missmatch"
-	case InvalidToken:
-		return "invalid token"
-	case EmptyRefreshToken:
-		return "refresh token is empty"
-	case EmptyCsrfToken:
-		return "csrf token is empty"
-	case TokenNotFound:
-		return "token not found"
-	case ExpiredToken:
-		return "token expired"
-	case MissingCsrf:
-		return "missing csrf token"
-	case MissingRefreshToken:
-		return "missing refresh token"
-	case MissingSessionID:
-		return "missing session id"
-	case MissingClaim:
-		return "missing claim in jwt"
-	case InvalidPassword:
-		return "invalid user password"
-	case MissingAuthorizationHeader:
-		return "missing authorization header"
-	default:
-		return "unhandled auth error"
-	}
+	return e.info().message
 }
 
 func (e AuthError) Code() string {
-	switch e {
-	case InvalidCredentials:
-		return "invalid_credentials"
-	case UnverifiedUserEmail:
-		return "email_not_verified"
-	case InvalidOldPassword:
-		return "invalid_old_password"
-	case TokenMissmatch:
-		return "token_mismatch"
-	case InvalidToken:
-		return "invalid_token"
-	case EmptyRefreshToken:
-		return "empty_refresh_token"
-	case EmptyCsrfToken:
-		return "empty_csrf_token"
-	case TokenNotFound:
-		return "token_not_found"
-	case ExpiredToken:
-		return "expired_token"
-	case MissingCsrf:
-		return "missing_csrf_token"
-	case MissingRefreshToken:
-		return "missing_refresh_token"
-	case MissingSessionID:
-		return "missing_session_id"
-	case MissingClaim:
-		return "missing_claim_in_jwt"
-	case InvalidPassword:
-		return "invalid_password"
-	case MissingAuthorizationHeader:
-		return "missing_authorization_header"
-	default:
-		return "unhandled_auth_error"
-	}
+	return e.info().code
 }
 
 func (e AuthError) Status() int {
-	switch e {
-	case InvalidCredentials:
-		return http.StatusUnauthorized
-	case UnverifiedUserEmail:
-		return http.StatusForbidden
-	case InvalidOldPassword:
-		return http.StatusBadRequest
-	case TokenMissmatch:
-		return http.StatusUnauthorized
-	case InvalidToken:
-		return http.StatusUnauthorized
-	case EmptyRefreshToken:
-		return http.StatusBadRequest
-	case EmptyCsrfToken:
-		return http.StatusBadRequest
-	case TokenNotFound:
-		return http.StatusUnauthorized
-	case ExpiredToken:
-		return http.StatusUnauthorized
-	case MissingCsrf:
-		return http.StatusBadRequest
-	case MissingRefreshToken:
-		return http.StatusUnauthorized
-	case MissingSessionID:
-		return http.StatusUnauthorized
-	case MissingClaim:
-		return http.StatusUnauthorized
-	case InvalidPassword:
-		return http.StatusBadRequest
-	case MissingAuthorizationHeader:
-		return http.StatusUnauthorized
-	default:
-		return http.StatusInternalServerError
+	return e.info().status
+}
+
+func (e AuthError) info() errorInfo {
+	if int(e) < 0 || int(e) >= len(authErrorTable) {
+		return errorInfo{
+			message: "unhandled auth error",
+			code:    "unhandled_auth_error",
+			status:  http.StatusInternalServerError,
+		}
 	}
+	return authErrorTable[e]
 }

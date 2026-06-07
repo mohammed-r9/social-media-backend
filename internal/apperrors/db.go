@@ -8,40 +8,43 @@ const (
 	CacheMiss
 )
 
+var databaseErrorTable = [...]errorInfo{
+	UniqueViolation: {
+		message: "unique violation",
+		code:    "unique_violation",
+		status:  http.StatusConflict,
+	},
+	NoRowsAffected: {
+		message: "no rows affected",
+		code:    "no_rows_affected",
+		status:  http.StatusNotFound,
+	},
+	CacheMiss: {
+		message: "cache miss",
+		code:    "cache_miss",
+		status:  http.StatusNotFound,
+	},
+}
+
 func (e DatabaseError) Error() string {
-	switch e {
-	case UniqueViolation:
-		return "unique violation"
-	case NoRowsAffected:
-		return "no rows affected"
-	case CacheMiss:
-		return "cache miss"
-	default:
-		return "unhandled database error"
-	}
+	return e.info().message
 }
 
 func (e DatabaseError) Code() string {
-	switch e {
-	case UniqueViolation:
-		return "unique_violation"
-	case NoRowsAffected:
-		return "no_rows_affected"
-	case CacheMiss:
-		return "cache_miss"
-	default:
-		return "unhandled_database_error"
-	}
+	return e.info().code
 }
+
 func (e DatabaseError) Status() int {
-	switch e {
-	case UniqueViolation:
-		return http.StatusConflict
-	case NoRowsAffected:
-		return http.StatusNotFound
-	case CacheMiss:
-		return http.StatusNotFound
-	default:
-		return http.StatusInternalServerError
+	return e.info().status
+}
+
+func (e DatabaseError) info() errorInfo {
+	if int(e) < 0 || int(e) >= len(databaseErrorTable) {
+		return errorInfo{
+			message: "unhandled database error",
+			code:    "unhandled_database_error",
+			status:  http.StatusInternalServerError,
+		}
 	}
+	return databaseErrorTable[e]
 }

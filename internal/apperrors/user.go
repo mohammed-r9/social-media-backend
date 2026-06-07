@@ -12,64 +12,63 @@ const (
 	EmailAlreadyTaken
 )
 
+var userErrorTable = [...]errorInfo{
+	UserNotFound: {
+		message: "user not found",
+		code:    "user_not_found",
+		status:  http.StatusNotFound,
+	},
+	InvalidUserID: {
+		message: "invalid user id",
+		code:    "invalid_user_id",
+		status:  http.StatusBadRequest,
+	},
+	InvalidUserEmail: {
+		message: "invalid user email",
+		code:    "invalid_user_email",
+		status:  http.StatusBadRequest,
+	},
+	InvalidUserName: {
+		message: "invalid user name",
+		code:    "invalid_user_name",
+		status:  http.StatusBadRequest,
+	},
+	InvalidUsername: {
+		message: "invalid username",
+		code:    "invalid_username",
+		status:  http.StatusBadRequest,
+	},
+	ProfileNotFound: {
+		message: "profile not found",
+		code:    "profile_not_found",
+		status:  http.StatusNotFound,
+	},
+	EmailAlreadyTaken: {
+		message: "email already taken",
+		code:    "email_taken",
+		status:  http.StatusConflict,
+	},
+}
+
 func (e UserError) Error() string {
-	switch e {
-	case UserNotFound:
-		return "user not found"
-	case InvalidUserID:
-		return "invalid user id"
-	case InvalidUserEmail:
-		return "invalid user email"
-	case InvalidUserName:
-		return "invalid user name"
-	case InvalidUsername:
-		return "invalid username"
-	case ProfileNotFound:
-		return "profile not found"
-	case EmailAlreadyTaken:
-		return "email already taken"
-	default:
-		return "unhandled user error"
-	}
+	return e.info().message
 }
 
 func (e UserError) Code() string {
-	switch e {
-	case UserNotFound:
-		return "user_not_found"
-	case InvalidUserID:
-		return "invalid_user_id"
-	case InvalidUserEmail:
-		return "invalid_user_email"
-	case InvalidUserName:
-		return "invalid_user_name"
-	case InvalidUsername:
-		return "invalid_username"
-	case ProfileNotFound:
-		return "profile_not_found"
-	case EmailAlreadyTaken:
-		return "email_taken"
-	default:
-		return "unhandled_user_error"
-	}
+	return e.info().code
 }
+
 func (e UserError) Status() int {
-	switch e {
-	case UserNotFound:
-		return http.StatusNotFound
-	case InvalidUserID:
-		return http.StatusBadRequest
-	case InvalidUserEmail:
-		return http.StatusBadRequest
-	case InvalidUserName:
-		return http.StatusBadRequest
-	case InvalidUsername:
-		return http.StatusBadRequest
-	case ProfileNotFound:
-		return http.StatusNotFound
-	case EmailAlreadyTaken:
-		return http.StatusConflict
-	default:
-		return http.StatusInternalServerError
+	return e.info().status
+}
+
+func (e UserError) info() errorInfo {
+	if int(e) < 0 || int(e) >= len(userErrorTable) {
+		return errorInfo{
+			message: "unhandled user error",
+			code:    "unhandled_user_error",
+			status:  http.StatusInternalServerError,
+		}
 	}
+	return userErrorTable[e]
 }

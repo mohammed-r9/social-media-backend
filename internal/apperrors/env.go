@@ -6,24 +6,33 @@ const (
 	MissingEnvVar EnvError = iota
 )
 
+var envErrorTable = [...]errorInfo{
+	MissingEnvVar: {
+		message: "missing environment variable",
+		code:    "missing_env_var",
+		status:  http.StatusInternalServerError,
+	},
+}
+
 func (e EnvError) Error() string {
-	switch e {
-	case MissingEnvVar:
-		return "missing environment variable"
-	default:
-		return "unhandled env error"
-	}
+	return e.info().message
 }
 
 func (e EnvError) Code() string {
-	switch e {
-	case MissingEnvVar:
-		return "missing_env_var"
-	default:
-		return "unhandled_env_error"
-	}
+	return e.info().code
 }
 
 func (e EnvError) Status() int {
-	return http.StatusInternalServerError
+	return e.info().status
+}
+
+func (e EnvError) info() errorInfo {
+	if int(e) < 0 || int(e) >= len(envErrorTable) {
+		return errorInfo{
+			message: "unhandled env error",
+			code:    "unhandled_env_error",
+			status:  http.StatusInternalServerError,
+		}
+	}
+	return envErrorTable[e]
 }
