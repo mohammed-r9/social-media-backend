@@ -33,6 +33,7 @@ func registerUserRoutes(r *gin.RouterGroup, h *UserHandler, authMW gin.HandlerFu
 	{
 		users.Use(authMW)
 		users.PUT("me/password", h.UpdateSelfPassword)
+		users.GET("/me", h.GetSelfUser)
 	}
 }
 

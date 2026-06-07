@@ -66,3 +66,10 @@ func (s *UserService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 
 	return err
 }
+
+func (s *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (domain.User, error) {
+	if userID == uuid.Nil {
+		return domain.User{}, domain.ErrInvalidUserID
+	}
+	return s.repo.GetUserByID(ctx, userID)
+}

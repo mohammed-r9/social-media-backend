@@ -65,3 +65,34 @@ func (h *UserHandler) UpdateSelfPassword(c *gin.Context) {
 		"message": "Password updated successfully",
 	})
 }
+
+// GetSelfUser godoc
+//
+//	@Summary		Gets the logged in user
+//	@Description	Allows an authenticated user to Get their data using the jwt
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			Authorization	header		string			true	"Type 'Bearer _JWT_'"
+//
+//	@Success		200		{object}	map[string]any		"Password updated successfully"
+//	@Failure		400		{object}	Response
+//	@Failure		401		{object}	Response
+//	@Failure		500		{object}	Response
+//	@Router			/users/me/ [get]
+func (h *UserHandler) GetSelfUser(c *gin.Context) {
+	userData, ok := getClaims(c)
+	if !ok {
+		_ = c.Error(errMissingUserClaimsInContext)
+		return
+	}
+
+	user, err := h.svc.GetUserByID(c.Request.Context(), userData.UserID)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	OK(c, user)
+}
