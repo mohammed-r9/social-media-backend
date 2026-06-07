@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"social-media-backend/internal/adapters/mailer"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo"
@@ -52,21 +53,21 @@ func (s *AuthService) Register(ctx context.Context, params RegisterParams) (doma
 
 	if params.PasswordPlainText == "" {
 		log.Warn("validation failed", "field", "password")
-		return domain.User{}, domain.ErrInvalidPassword
+		return domain.User{}, apperrors.InvalidPassword
 	}
 
 	if params.Email == "" {
 		log.Warn("validation failed", "field", "email")
-		return domain.User{}, domain.ErrInvalidUserEmail
+		return domain.User{}, apperrors.InvalidUserEmail
 	}
 
 	if params.Name == "" {
 		log.Warn("validation failed", "field", "name")
-		return domain.User{}, domain.ErrInvalidUserName
+		return domain.User{}, apperrors.InvalidUserName
 	}
 	if params.Username == "" {
 		log.Warn("validation failed", "field", "username")
-		return domain.User{}, domain.ErrInvalidUsername
+		return domain.User{}, apperrors.InvalidUsername
 	}
 
 	passowrdHash, err := auth.HashPassword(params.PasswordPlainText)
@@ -108,7 +109,7 @@ func (s *AuthService) Register(ctx context.Context, params RegisterParams) (doma
 
 func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.AuthTokens, error) {
 	if params.Email == "" || params.Password == "" {
-		return domain.AuthTokens{}, domain.ErrInvalidCredentials
+		return domain.AuthTokens{}, apperrors.InvalidCredentials
 	}
 
 	user, err := s.userRepo.GetUserByEmail(ctx, params.Email)
@@ -122,11 +123,11 @@ func (s *AuthService) Login(ctx context.Context, params LoginParams) (domain.Aut
 	})
 
 	if err != nil {
-		return domain.AuthTokens{}, domain.ErrInvalidCredentials
+		return domain.AuthTokens{}, apperrors.InvalidCredentials
 	}
 
 	if !isValid {
-		return domain.AuthTokens{}, domain.ErrInvalidCredentials
+		return domain.AuthTokens{}, apperrors.InvalidCredentials
 	}
 
 	sessionTokens := auth.GenerateSessionTokens()
@@ -173,11 +174,11 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 	}
 
 	if time.Now().After(dto.Session.ExpiresAt) {
-		return "", domain.ErrSessionExpired
+		return "", apperrors.SessionExpired
 	}
 
 	if dto.Session.RevokedAt != nil {
-		return "", domain.ErrSessionRevoked
+		return "", apperrors.SessionRevoked
 	}
 
 	isValid := auth.CompareTokenToHash(auth.CompareTokenToHashParams{
@@ -185,7 +186,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		StoredHash: dto.Session.RefreshTokenHash,
 	})
 	if !isValid {
-		return "", auth.ErrTokenMismatch
+		return "", apperrors.TokenMissmatch
 	}
 
 	if params.CsrfToken != nil {
@@ -195,7 +196,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		})
 
 		if !isValid {
-			return "", auth.ErrTokenMismatch
+			return "", apperrors.TokenMissmatch
 		}
 	}
 
@@ -207,7 +208,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 
 func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 	if token == "" {
-		return domain.ErrInvalidToken
+		return apperrors.InvalidToken
 	}
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
@@ -236,7 +237,7 @@ type ResetUserPasswordParams struct {
 
 func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPasswordParams) error {
 	if params.Token == "" {
-		return domain.ErrInvalidToken
+		return apperrors.InvalidToken
 	}
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
@@ -268,7 +269,7 @@ func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPas
 
 func (s *AuthService) AskForPasswordReset(ctx context.Context, email string) error {
 	if email == "" {
-		return domain.ErrInvalidUserEmail
+		return apperrors.InvalidUserEmail
 	}
 
 	user, err := s.userRepo.GetUserByEmail(ctx, email)

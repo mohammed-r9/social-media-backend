@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"log/slog"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo"
 	"time"
@@ -44,7 +45,7 @@ func (c *CachedUserRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (dom
 		return user, nil
 	}
 
-	if err != ErrCacheMiss {
+	if err != apperrors.CacheMiss {
 		c.logger.Warn("cache read failed", "err", err, "user_id", userID)
 	}
 

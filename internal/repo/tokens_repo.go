@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/utils"
 
@@ -42,7 +43,7 @@ func (r *RedisRepo) GetToken(ctx context.Context, key string) (StoredToken, erro
 	data, err := r.c.Get(ctx, key).Result()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
-			return token, auth.ErrTokenNotFound
+			return token, apperrors.TokenNotFound
 		}
 		return token, fmt.Errorf("redis get failed: %w", err)
 	}
@@ -61,7 +62,7 @@ func (r *RedisRepo) DeleteToken(ctx context.Context, key string) error {
 	}
 
 	if res == 0 {
-		return auth.ErrTokenNotFound
+		return apperrors.TokenNotFound
 	}
 
 	return nil

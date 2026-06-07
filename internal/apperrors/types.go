@@ -6,4 +6,5 @@ type (
 	AuthError     uint8
 	SessionError  uint8
 	NetworkError  uint8
+	EnvError      uint8
 )

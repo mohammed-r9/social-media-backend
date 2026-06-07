@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"social-media-backend/internal/apperrors"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -31,7 +32,7 @@ func (r *RedisCache) Get(ctx context.Context, key string, dest any) error {
 	data, err := r.c.Get(ctx, key).Bytes()
 	if err != nil {
 		if err == redis.Nil {
-			return ErrCacheMiss
+			return apperrors.CacheMiss
 		}
 		return err
 	}

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
-	"social-media-backend/internal/domain"
 	"social-media-backend/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -118,7 +118,7 @@ type loginRequest struct {
 func (h *AuthHandler) Login(c *gin.Context) {
 	authMode := c.GetHeader("X-Auth-Mode") // SHOULD ONLY BE USED TO FORMAT THE RESPONSE
 	if authMode == "" {
-		_ = c.Error(errMissingAuthModeHeader)
+		_ = c.Error(apperrors.MissingAuthModeHeader)
 		return
 	}
 
@@ -177,7 +177,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 			"session_id":    sessionTokens.SessionID,
 		})
 	default:
-		_ = c.Error(errInvalidAuthModeHeader)
+		_ = c.Error(apperrors.InvalidAuthModeHeader)
 		return
 	}
 }
@@ -251,7 +251,7 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 
 	err := h.svc.AskForPasswordReset(c.Request.Context(), req.Email)
 	if err != nil {
-		if !errors.Is(err, domain.ErrUserNotFound) {
+		if !errors.Is(err, apperrors.UserNotFound) {
 			_ = c.Error(err)
 			return
 		}

@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
-	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo"
 	"social-media-backend/internal/utils"
 	"time"
@@ -26,7 +26,7 @@ func (s *TokenService) GenerateAndStoreEmailVerificationToken(
 	userID uuid.UUID,
 ) (auth.ShortLivedToken, error) {
 	if userID == uuid.Nil {
-		return auth.ShortLivedToken{}, domain.ErrInvalidUserID
+		return auth.ShortLivedToken{}, apperrors.InvalidUserID
 	}
 
 	token := auth.GenerateEmailVerificationToken(userID)
@@ -47,7 +47,7 @@ func (s *TokenService) GenerateAndStorePasswordResetToken(
 ) (auth.ShortLivedToken, error) {
 
 	if userID == uuid.Nil {
-		return auth.ShortLivedToken{}, domain.ErrInvalidUserID
+		return auth.ShortLivedToken{}, apperrors.InvalidUserID
 	}
 
 	token := auth.GeneratePasswordResetToken(userID)
@@ -77,15 +77,15 @@ func (s *TokenService) VerifyToken(ctx context.Context, params VerifyTokenParams
 	}
 
 	if token.UserID == uuid.Nil {
-		return uuid.Nil, auth.ErrInvalidToken
+		return uuid.Nil, apperrors.InvalidToken
 	}
 
 	if token.Scope != params.Scope {
-		return uuid.Nil, auth.ErrInvalidToken
+		return uuid.Nil, apperrors.InvalidToken
 	}
 
 	if time.Now().After(token.ExpiresAt) {
-		return uuid.Nil, auth.ErrExpiredToken
+		return uuid.Nil, apperrors.ExpiredToken
 	}
 
 	return token.UserID, nil

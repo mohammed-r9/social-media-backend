@@ -6,6 +6,17 @@ const (
 	InvalidOldPassword
 	TokenMissmatch
 	InvalidToken
+	EmptyRefreshToken
+	EmptyCsrfToken
+	TokenNotFound
+	ExpiredToken
+	MissingCsrf
+	MissingRefreshToken
+	MissingSessionID
+	MissingClaim
+	InvalidPassword
+	MissingToken
+	MissingAuthorizationHeader
 )
 
 func (e AuthError) Error() string {
@@ -20,7 +31,64 @@ func (e AuthError) Error() string {
 		return "token missmatch"
 	case InvalidToken:
 		return "invalid token"
+	case EmptyRefreshToken:
+		return "refresh token is empty"
+	case EmptyCsrfToken:
+		return "csrf token is empty"
+	case TokenNotFound:
+		return "token not found"
+	case ExpiredToken:
+		return "token expired"
+	case MissingCsrf:
+		return "missing csrf token"
+	case MissingRefreshToken:
+		return "missing refresh token"
+	case MissingSessionID:
+		return "missing session id"
+	case MissingClaim:
+		return "missing claim in jwt"
+	case InvalidPassword:
+		return "invalid user password"
+	case MissingAuthorizationHeader:
+		return "missing authorization header"
 	default:
 		return "unhandled auth error"
+	}
+}
+
+func (e AuthError) Code() string {
+	switch e {
+	case InvalidCredentials:
+		return "invalid_credentials"
+	case UnverifiedUserEmail:
+		return "email_not_verified"
+	case InvalidOldPassword:
+		return "invalid_old_password"
+	case TokenMissmatch:
+		return "token_mismatch"
+	case InvalidToken:
+		return "invalid_token"
+	case EmptyRefreshToken:
+		return "empty_refresh_token"
+	case EmptyCsrfToken:
+		return "empty_csrf_token"
+	case TokenNotFound:
+		return "token_not_found"
+	case ExpiredToken:
+		return "expired_token"
+	case MissingCsrf:
+		return "missing_csrf_token"
+	case MissingRefreshToken:
+		return "missing_refresh_token"
+	case MissingSessionID:
+		return "missing_session_id"
+	case MissingClaim:
+		return "missing_claim_in_jwt"
+	case InvalidPassword:
+		return "invalid_password"
+	case MissingAuthorizationHeader:
+		return "missing_authorization_header"
+	default:
+		return "unhandled_auth_error"
 	}
 }

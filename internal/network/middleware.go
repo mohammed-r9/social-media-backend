@@ -2,6 +2,7 @@ package network
 
 import (
 	"log/slog"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
 	"strings"
 	"time"
@@ -97,7 +98,7 @@ func authMiddleware(jwtKey []byte) gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			_ = c.Error(errMissingAuthorizationHeader)
+			_ = c.Error(apperrors.MissingAuthorizationHeader)
 			c.Abort()
 			return
 		}
@@ -105,14 +106,14 @@ func authMiddleware(jwtKey []byte) gin.HandlerFunc {
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 
 		if token == "" {
-			_ = c.Error(errMissingAccessToken)
+			_ = c.Error(apperrors.MissingToken)
 			c.Abort()
 			return
 		}
 
 		claims, err := auth.VerifyAccessToken(token, jwtKey)
 		if err != nil {
-			_ = c.Error(errInvalidAccessToken)
+			_ = c.Error(apperrors.InvalidToken)
 			c.Abort()
 			return
 		}

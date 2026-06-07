@@ -1,6 +1,7 @@
 package network
 
 import (
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/service"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +41,7 @@ type updatePasswordReq struct {
 func (h *UserHandler) UpdateSelfPassword(c *gin.Context) {
 	userData, ok := getClaims(c)
 	if !ok {
-		_ = c.Error(errMissingUserClaimsInContext)
+		_ = c.Error(apperrors.MissingUserClaimsInContext)
 		return
 	}
 
@@ -84,7 +85,7 @@ func (h *UserHandler) UpdateSelfPassword(c *gin.Context) {
 func (h *UserHandler) GetSelfUser(c *gin.Context) {
 	userData, ok := getClaims(c)
 	if !ok {
-		_ = c.Error(errMissingUserClaimsInContext)
+		_ = c.Error(apperrors.MissingUserClaimsInContext)
 		return
 	}
 

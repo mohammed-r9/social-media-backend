@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"social-media-backend/internal/adapters/sqlc/db"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/domain"
 	"time"
 
@@ -32,11 +33,11 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSe
 			switch pgErr.Code {
 			// unique_violation
 			case "23505":
-				return domain.Session{}, domain.ErrSessionAlreadyExists
+				return domain.Session{}, apperrors.SessionAlreadyExists
 
 			// foreign_key_violation
 			case "23503":
-				return domain.Session{}, domain.ErrUserNotFound
+				return domain.Session{}, apperrors.UserNotFound
 			}
 		}
 
@@ -58,7 +59,7 @@ func (r *PostgresRepo) GetUserSession(ctx context.Context, sessionID string) (Us
 	session, err := r.q.GetUserSession(ctx, sessionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return UserSessionDTO{}, domain.ErrSessionNotFound
+			return UserSessionDTO{}, apperrors.SessionNotFound
 		}
 
 		return UserSessionDTO{}, err

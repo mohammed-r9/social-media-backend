@@ -3,6 +3,7 @@ package env
 import (
 	"fmt"
 	"os"
+	"social-media-backend/internal/apperrors"
 
 	"github.com/joho/godotenv"
 )
@@ -27,7 +28,7 @@ func New(path string) (*Config, error) {
 	get := func(key string) (string, error) {
 		v := os.Getenv(key)
 		if v == "" {
-			return "", fmt.Errorf("missing env var: %s", key)
+			return "", fmt.Errorf("%w: %s", apperrors.MissingEnvVar, key)
 		}
 		return v, nil
 	}

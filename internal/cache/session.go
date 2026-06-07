@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"log/slog"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo"
 	"time"
@@ -36,11 +37,11 @@ func (c *CachedSessionRepo) GetUserSession(ctx context.Context, sessionID string
 
 	// session
 	err := c.cache.Get(ctx, keySessionByID(sessionID), &session)
-	if err != nil && err != ErrCacheMiss {
+	if err != nil && err != apperrors.CacheMiss {
 		c.logger.Warn("session cache read failed", "err", err, "session_id", sessionID)
 	}
 
-	if err == ErrCacheMiss {
+	if err == apperrors.CacheMiss {
 		dto, err := c.next.GetUserSession(ctx, sessionID)
 		if err != nil {
 			c.logger.Error("db fallback failed", "err", err, "session_id", sessionID)
@@ -53,11 +54,11 @@ func (c *CachedSessionRepo) GetUserSession(ctx context.Context, sessionID string
 
 	// user
 	err = c.cache.Get(ctx, keyUserByID(session.UserID.String()), &user)
-	if err != nil && err != ErrCacheMiss {
+	if err != nil && err != apperrors.CacheMiss {
 		c.logger.Warn("user cache read failed", "err", err, "user_id", session.UserID)
 	}
 
-	if err == ErrCacheMiss {
+	if err == apperrors.CacheMiss {
 		userSession, err := c.next.GetUserSession(ctx, sessionID)
 		if err != nil {
 			c.logger.Error("user db fallback failed", "err", err, "user_id", session.UserID)

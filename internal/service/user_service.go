@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/repo"
@@ -27,11 +28,11 @@ type UpdateUserPasswordParams struct {
 
 func (s *UserService) UpdateUserPassword(ctx context.Context, params UpdateUserPasswordParams) error {
 	if params.UserID == uuid.Nil {
-		return domain.ErrInvalidUserID
+		return apperrors.InvalidUserID
 	}
 
 	if params.NewPassword == params.OldPassword {
-		return domain.ErrInvalidPassword
+		return apperrors.InvalidPassword
 	}
 
 	user, err := s.repo.GetUserByID(ctx, params.UserID)
@@ -48,7 +49,7 @@ func (s *UserService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 	}
 
 	if !isMatched {
-		return domain.ErrInvalidOldPassword
+		return apperrors.InvalidOldPassword
 	}
 
 	newPasswordHash, err := auth.HashPassword(params.NewPassword)
@@ -61,7 +62,7 @@ func (s *UserService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 		PasswordHash: newPasswordHash,
 	})
 	if id == uuid.Nil {
-		return domain.ErrNoRowsAffected
+		return apperrors.NoRowsAffected
 	}
 
 	return err
@@ -69,7 +70,7 @@ func (s *UserService) UpdateUserPassword(ctx context.Context, params UpdateUserP
 
 func (s *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (domain.User, error) {
 	if userID == uuid.Nil {
-		return domain.User{}, domain.ErrInvalidUserID
+		return domain.User{}, apperrors.InvalidUserID
 	}
 	return s.repo.GetUserByID(ctx, userID)
 }

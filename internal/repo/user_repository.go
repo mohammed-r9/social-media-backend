@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"social-media-backend/internal/adapters/sqlc/db"
+	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/domain"
 	"social-media-backend/internal/utils"
 
@@ -44,7 +45,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserP
 	if err != nil {
 		if pqErr, ok := errors.AsType[*pgconn.PgError](err); ok {
 			if pqErr.Code == "23505" {
-				return domain.User{}, domain.ErrEmailAlreadyTaken
+				return domain.User{}, apperrors.EmailAlreadyTaken
 			}
 		}
 
@@ -76,12 +77,12 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserP
 
 func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain.User, error) {
 	if email == "" {
-		return domain.User{}, domain.ErrInvalidUserEmail
+		return domain.User{}, apperrors.InvalidUserEmail
 	}
 
 	user, err := r.q.GetUserByEmail(ctx, email)
 	if errors.Is(err, sql.ErrNoRows) {
-		return domain.User{}, domain.ErrUserNotFound
+		return domain.User{}, apperrors.UserNotFound
 	}
 
 	return domain.User{
@@ -97,12 +98,12 @@ func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain
 
 func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domain.User, error) {
 	if userID == uuid.Nil {
-		return domain.User{}, domain.ErrInvalidUserID
+		return domain.User{}, apperrors.InvalidUserID
 	}
 
 	user, err := r.q.GetUserByID(ctx, userID)
 	if errors.Is(err, sql.ErrNoRows) {
-		return domain.User{}, domain.ErrUserNotFound
+		return domain.User{}, apperrors.UserNotFound
 	}
 
 	return domain.User{
@@ -132,7 +133,7 @@ func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.Upd
 	})
 
 	if userID == uuid.Nil {
-		return uuid.Nil, domain.ErrNoRowsAffected
+		return uuid.Nil, apperrors.NoRowsAffected
 	}
 
 	return userID, err
@@ -142,7 +143,7 @@ func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) (u
 	userID, err := r.q.VerifyUserEmail(ctx, userID)
 
 	if userID == uuid.Nil {
-		return uuid.Nil, domain.ErrNoRowsAffected
+		return uuid.Nil, apperrors.NoRowsAffected
 	}
 
 	return userID, err
@@ -151,7 +152,7 @@ func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) (u
 // TODO: add s3 first to handle the avatar
 func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.UpdateProfileParams) (domain.Profile, error) {
 	if params.UserID == uuid.Nil {
-		return domain.Profile{}, domain.ErrInvalidUserID
+		return domain.Profile{}, apperrors.InvalidUserID
 	}
 
 	profile, err := r.q.UpdateUserProfile(ctx, db.UpdateUserProfileParams{
@@ -166,7 +167,7 @@ func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.Upda
 		if errors.As(err, &pgErr) {
 
 			if errors.Is(err, pgx.ErrNoRows) {
-				return domain.Profile{}, domain.ErrProfileNotFound
+				return domain.Profile{}, apperrors.ProfileNotFound
 			}
 
 			return domain.Profile{}, fmt.Errorf("update user profile: %w", err)
