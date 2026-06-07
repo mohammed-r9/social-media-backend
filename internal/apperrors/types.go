@@ -1,12 +1,12 @@
 package apperrors
 
 type (
-	DatabaseError uint8
-	UserError     uint8
-	AuthError     uint8
-	SessionError  uint8
-	NetworkError  uint8
-	EnvError      uint8
+	databaseError uint8
+	userError     uint8
+	authError     uint8
+	sessionError  uint8
+	networkError  uint8
+	envError      uint8
 )
 
 type AppError interface {

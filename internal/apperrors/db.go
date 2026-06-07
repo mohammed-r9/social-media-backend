@@ -3,7 +3,7 @@ package apperrors
 import "net/http"
 
 const (
-	UniqueViolation DatabaseError = iota
+	UniqueViolation databaseError = iota
 	NoRowsAffected
 	CacheMiss
 )
@@ -26,19 +26,19 @@ var databaseErrorTable = [...]errorInfo{
 	},
 }
 
-func (e DatabaseError) Error() string {
+func (e databaseError) Error() string {
 	return e.info().message
 }
 
-func (e DatabaseError) Code() string {
+func (e databaseError) Code() string {
 	return e.info().code
 }
 
-func (e DatabaseError) Status() int {
+func (e databaseError) Status() int {
 	return e.info().status
 }
 
-func (e DatabaseError) info() errorInfo {
+func (e databaseError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(databaseErrorTable) {
 		return errorInfo{
 			message: "unhandled database error",

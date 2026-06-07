@@ -3,7 +3,7 @@ package apperrors
 import "net/http"
 
 const (
-	MissingAuthModeHeader NetworkError = iota
+	MissingAuthModeHeader networkError = iota
 	InvalidAuthModeHeader
 	MissingUserClaimsInContext
 	InvalidRequestBody
@@ -32,19 +32,19 @@ var networkErrorTable = [...]errorInfo{
 	},
 }
 
-func (e NetworkError) Error() string {
+func (e networkError) Error() string {
 	return e.info().message
 }
 
-func (e NetworkError) Code() string {
+func (e networkError) Code() string {
 	return e.info().code
 }
 
-func (e NetworkError) Status() int {
+func (e networkError) Status() int {
 	return e.info().status
 }
 
-func (e NetworkError) info() errorInfo {
+func (e networkError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(networkErrorTable) {
 		return errorInfo{
 			message: "unhandled network error",

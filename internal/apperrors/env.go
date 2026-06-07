@@ -3,7 +3,7 @@ package apperrors
 import "net/http"
 
 const (
-	MissingEnvVar EnvError = iota
+	MissingEnvVar envError = iota
 )
 
 var envErrorTable = [...]errorInfo{
@@ -14,19 +14,19 @@ var envErrorTable = [...]errorInfo{
 	},
 }
 
-func (e EnvError) Error() string {
+func (e envError) Error() string {
 	return e.info().message
 }
 
-func (e EnvError) Code() string {
+func (e envError) Code() string {
 	return e.info().code
 }
 
-func (e EnvError) Status() int {
+func (e envError) Status() int {
 	return e.info().status
 }
 
-func (e EnvError) info() errorInfo {
+func (e envError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(envErrorTable) {
 		return errorInfo{
 			message: "unhandled env error",

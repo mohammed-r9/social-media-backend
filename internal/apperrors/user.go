@@ -3,7 +3,7 @@ package apperrors
 import "net/http"
 
 const (
-	UserNotFound UserError = iota
+	UserNotFound userError = iota
 	InvalidUserID
 	InvalidUserEmail
 	InvalidUserName
@@ -50,19 +50,19 @@ var userErrorTable = [...]errorInfo{
 	},
 }
 
-func (e UserError) Error() string {
+func (e userError) Error() string {
 	return e.info().message
 }
 
-func (e UserError) Code() string {
+func (e userError) Code() string {
 	return e.info().code
 }
 
-func (e UserError) Status() int {
+func (e userError) Status() int {
 	return e.info().status
 }
 
-func (e UserError) info() errorInfo {
+func (e userError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(userErrorTable) {
 		return errorInfo{
 			message: "unhandled user error",

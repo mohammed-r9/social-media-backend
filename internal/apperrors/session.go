@@ -3,7 +3,7 @@ package apperrors
 import "net/http"
 
 const (
-	SessionExpired SessionError = iota
+	SessionExpired sessionError = iota
 	SessionRevoked
 	SessionAlreadyExists
 	SessionNotFound
@@ -32,19 +32,19 @@ var sessionErrorTable = [...]errorInfo{
 	},
 }
 
-func (e SessionError) Error() string {
+func (e sessionError) Error() string {
 	return e.info().message
 }
 
-func (e SessionError) Code() string {
+func (e sessionError) Code() string {
 	return e.info().code
 }
 
-func (e SessionError) Status() int {
+func (e sessionError) Status() int {
 	return e.info().status
 }
 
-func (e SessionError) info() errorInfo {
+func (e sessionError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(sessionErrorTable) {
 		return errorInfo{
 			message: "unhandled session error",

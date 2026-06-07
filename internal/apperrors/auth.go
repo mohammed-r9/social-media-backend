@@ -3,7 +3,7 @@ package apperrors
 import "net/http"
 
 const (
-	InvalidCredentials AuthError = iota
+	InvalidCredentials authError = iota
 	UnverifiedUserEmail
 	InvalidOldPassword
 	TokenMissmatch
@@ -99,19 +99,19 @@ var authErrorTable = [...]errorInfo{
 	},
 }
 
-func (e AuthError) Error() string {
+func (e authError) Error() string {
 	return e.info().message
 }
 
-func (e AuthError) Code() string {
+func (e authError) Code() string {
 	return e.info().code
 }
 
-func (e AuthError) Status() int {
+func (e authError) Status() int {
 	return e.info().status
 }
 
-func (e AuthError) info() errorInfo {
+func (e authError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(authErrorTable) {
 		return errorInfo{
 			message: "unhandled auth error",
