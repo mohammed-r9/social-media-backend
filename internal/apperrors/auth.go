@@ -1,5 +1,7 @@
 package apperrors
 
+import "net/http"
+
 const (
 	InvalidCredentials AuthError = iota
 	UnverifiedUserEmail
@@ -90,5 +92,41 @@ func (e AuthError) Code() string {
 		return "missing_authorization_header"
 	default:
 		return "unhandled_auth_error"
+	}
+}
+func (e AuthError) Status() int {
+	switch e {
+	case InvalidCredentials:
+		return http.StatusUnauthorized
+	case UnverifiedUserEmail:
+		return http.StatusForbidden
+	case InvalidOldPassword:
+		return http.StatusBadRequest
+	case TokenMissmatch:
+		return http.StatusUnauthorized
+	case InvalidToken:
+		return http.StatusUnauthorized
+	case EmptyRefreshToken:
+		return http.StatusBadRequest
+	case EmptyCsrfToken:
+		return http.StatusBadRequest
+	case TokenNotFound:
+		return http.StatusUnauthorized
+	case ExpiredToken:
+		return http.StatusUnauthorized
+	case MissingCsrf:
+		return http.StatusBadRequest
+	case MissingRefreshToken:
+		return http.StatusUnauthorized
+	case MissingSessionID:
+		return http.StatusUnauthorized
+	case MissingClaim:
+		return http.StatusUnauthorized
+	case InvalidPassword:
+		return http.StatusBadRequest
+	case MissingAuthorizationHeader:
+		return http.StatusUnauthorized
+	default:
+		return http.StatusInternalServerError
 	}
 }

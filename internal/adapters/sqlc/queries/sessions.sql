@@ -17,3 +17,9 @@ SELECT
 FROM sessions s
 JOIN users u ON u.id = s.user_id
 WHERE s.id = @id;
+
+-- name: RevokeSession :one
+UPDATE sessions
+	SET revoked_at = CURRENT_TIMESTAMP
+	WHERE id = @id
+RETURNING id;

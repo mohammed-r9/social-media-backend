@@ -1,5 +1,7 @@
 package apperrors
 
+import "net/http"
+
 const (
 	UniqueViolation DatabaseError = iota
 	NoRowsAffected
@@ -29,5 +31,17 @@ func (e DatabaseError) Code() string {
 		return "cache_miss"
 	default:
 		return "unhandled_database_error"
+	}
+}
+func (e DatabaseError) Status() int {
+	switch e {
+	case UniqueViolation:
+		return http.StatusConflict
+	case NoRowsAffected:
+		return http.StatusNotFound
+	case CacheMiss:
+		return http.StatusNotFound
+	default:
+		return http.StatusInternalServerError
 	}
 }

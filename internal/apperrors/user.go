@@ -1,5 +1,7 @@
 package apperrors
 
+import "net/http"
+
 const (
 	UserNotFound UserError = iota
 	InvalidUserID
@@ -49,5 +51,25 @@ func (e UserError) Code() string {
 		return "email_taken"
 	default:
 		return "unhandled_user_error"
+	}
+}
+func (e UserError) Status() int {
+	switch e {
+	case UserNotFound:
+		return http.StatusNotFound
+	case InvalidUserID:
+		return http.StatusBadRequest
+	case InvalidUserEmail:
+		return http.StatusBadRequest
+	case InvalidUserName:
+		return http.StatusBadRequest
+	case InvalidUsername:
+		return http.StatusBadRequest
+	case ProfileNotFound:
+		return http.StatusNotFound
+	case EmailAlreadyTaken:
+		return http.StatusConflict
+	default:
+		return http.StatusInternalServerError
 	}
 }

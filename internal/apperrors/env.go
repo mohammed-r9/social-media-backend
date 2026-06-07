@@ -1,5 +1,7 @@
 package apperrors
 
+import "net/http"
+
 const (
 	MissingEnvVar EnvError = iota
 )
@@ -20,4 +22,8 @@ func (e EnvError) Code() string {
 	default:
 		return "unhandled_env_error"
 	}
+}
+
+func (e EnvError) Status() int {
+	return http.StatusInternalServerError
 }

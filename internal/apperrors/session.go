@@ -1,5 +1,7 @@
 package apperrors
 
+import "net/http"
+
 const (
 	SessionExpired SessionError = iota
 	SessionRevoked
@@ -34,5 +36,20 @@ func (e SessionError) Code() string {
 		return "session_not_found"
 	default:
 		return "unhandled_session_error"
+	}
+}
+
+func (e SessionError) Status() int {
+	switch e {
+	case SessionExpired:
+		return http.StatusUnauthorized
+	case SessionRevoked:
+		return http.StatusUnauthorized
+	case SessionAlreadyExists:
+		return http.StatusConflict
+	case SessionNotFound:
+		return http.StatusNotFound
+	default:
+		return http.StatusInternalServerError
 	}
 }

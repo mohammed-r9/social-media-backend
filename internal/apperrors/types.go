@@ -8,3 +8,9 @@ type (
 	NetworkError  uint8
 	EnvError      uint8
 )
+
+type AppError interface {
+	Error() string
+	Code() string
+	Status() int
+}

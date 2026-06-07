@@ -1,5 +1,7 @@
 package apperrors
 
+import "net/http"
+
 const (
 	MissingAuthModeHeader NetworkError = iota
 	InvalidAuthModeHeader
@@ -34,5 +36,19 @@ func (e NetworkError) Code() string {
 		return "invalid_request_body"
 	default:
 		return "unhandled_network_error"
+	}
+}
+func (e NetworkError) Status() int {
+	switch e {
+	case MissingAuthModeHeader:
+		return http.StatusUnauthorized
+	case InvalidAuthModeHeader:
+		return http.StatusUnauthorized
+	case MissingUserClaimsInContext:
+		return http.StatusUnauthorized
+	case InvalidRequestBody:
+		return http.StatusBadRequest
+	default:
+		return http.StatusInternalServerError
 	}
 }

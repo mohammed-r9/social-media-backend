@@ -75,92 +75,21 @@ func mapError(err error) (int, Response) {
 			}}
 	}
 
-	var (
-		authErr    apperrors.AuthError
-		userErr    apperrors.UserError
-		sessionErr apperrors.SessionError
-		dbErr      apperrors.DatabaseError
-		networkErr apperrors.NetworkError
-	)
-
-	switch {
-	case errors.As(err, &authErr):
-		status := http.StatusUnauthorized
-		if authErr == apperrors.UnverifiedUserEmail {
-			status = http.StatusForbidden
-		}
-
-		return status, Response{
+	if appErr, ok := errors.AsType[apperrors.AppError](err); ok {
+		return appErr.Status(), Response{
 			Success: false,
 			Error: &ErrorInfo{
-				Code:    authErr.Code(),
-				Message: authErr.Error(),
+				Code:    appErr.Code(),
+				Message: appErr.Error(),
 			},
 		}
+	}
 
-	case errors.As(err, &userErr):
-		status := http.StatusBadRequest
-		if userErr == apperrors.UserNotFound {
-			status = http.StatusNotFound
-		}
-
-		if userErr == apperrors.EmailAlreadyTaken {
-			status = http.StatusConflict
-		}
-
-		return status, Response{
-			Success: false,
-			Error: &ErrorInfo{
-				Code:    userErr.Code(),
-				Message: userErr.Error(),
-			},
-		}
-
-	case errors.As(err, &sessionErr):
-		status := http.StatusUnauthorized
-		if sessionErr == apperrors.SessionAlreadyExists {
-			status = http.StatusConflict
-		}
-
-		if sessionErr == apperrors.SessionNotFound {
-			status = http.StatusNotFound
-		}
-
-		return status, Response{
-			Success: false,
-			Error: &ErrorInfo{
-				Code:    sessionErr.Code(),
-				Message: sessionErr.Error(),
-			},
-		}
-
-	case errors.As(err, &dbErr):
-		status := http.StatusInternalServerError
-		if dbErr == apperrors.NoRowsAffected {
-			status = http.StatusNotFound
-		}
-
-		return status, Response{
-			Success: false,
-			Error: &ErrorInfo{
-				Code:    dbErr.Code(),
-				Message: dbErr.Error(),
-			},
-		}
-
-	case errors.As(err, &networkErr):
-		return http.StatusBadRequest, Response{
-			Success: false,
-			Error: &ErrorInfo{
-				Code:    networkErr.Code(),
-				Message: networkErr.Error(),
-			},
-		}
-
-	default:
-		return http.StatusInternalServerError, Response{
-			Success: false,
-			Error:   &ErrorInfo{Code: "internal_error", Message: "internal server error"},
-		}
+	return http.StatusInternalServerError, Response{
+		Success: false,
+		Error: &ErrorInfo{
+			Message: err.Error(),
+			Code:    "internal_error",
+		},
 	}
 }
