@@ -10,7 +10,7 @@ type (
 )
 
 type AppError interface {
-	Error() string
+	error
 	Code() string
 	Status() int
 }

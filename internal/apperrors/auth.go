@@ -94,6 +94,7 @@ func (e AuthError) Code() string {
 		return "unhandled_auth_error"
 	}
 }
+
 func (e AuthError) Status() int {
 	switch e {
 	case InvalidCredentials:
