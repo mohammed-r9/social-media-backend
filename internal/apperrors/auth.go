@@ -6,10 +6,8 @@ const (
 	InvalidCredentials authError = iota
 	UnverifiedUserEmail
 	InvalidOldPassword
-	TokenMissmatch
+	TokenMismatch
 	InvalidToken
-	EmptyRefreshToken
-	EmptyCsrfToken
 	TokenNotFound
 	ExpiredToken
 	MissingCsrf
@@ -19,6 +17,9 @@ const (
 	InvalidPassword
 	MissingToken
 	MissingAuthorizationHeader
+
+	// new errors should be added above this line
+	authErrorCount
 )
 
 var authErrorTable = [...]errorInfo{
@@ -37,8 +38,8 @@ var authErrorTable = [...]errorInfo{
 		code:    "invalid_old_password",
 		status:  http.StatusBadRequest,
 	},
-	TokenMissmatch: {
-		message: "token missmatch",
+	TokenMismatch: {
+		message: "token mismatch",
 		code:    "token_mismatch",
 		status:  http.StatusUnauthorized,
 	},
@@ -46,16 +47,6 @@ var authErrorTable = [...]errorInfo{
 		message: "invalid token",
 		code:    "invalid_token",
 		status:  http.StatusUnauthorized,
-	},
-	EmptyRefreshToken: {
-		message: "refresh token is empty",
-		code:    "empty_refresh_token",
-		status:  http.StatusBadRequest,
-	},
-	EmptyCsrfToken: {
-		message: "csrf token is empty",
-		code:    "empty_csrf_token",
-		status:  http.StatusBadRequest,
 	},
 	TokenNotFound: {
 		message: "token not found",
@@ -92,11 +83,22 @@ var authErrorTable = [...]errorInfo{
 		code:    "invalid_password",
 		status:  http.StatusBadRequest,
 	},
+	MissingToken: {
+		message: "missing token",
+		code:    "missing_token",
+		status:  http.StatusUnauthorized,
+	},
 	MissingAuthorizationHeader: {
 		message: "missing authorization header",
 		code:    "missing_authorization_header",
 		status:  http.StatusUnauthorized,
 	},
+}
+
+var unhandledAuthErrorInfo = errorInfo{
+	message: "unhandled auth error",
+	code:    "unhandled_auth_error",
+	status:  http.StatusInternalServerError,
 }
 
 func (e authError) Error() string {
@@ -113,11 +115,14 @@ func (e authError) Status() int {
 
 func (e authError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(authErrorTable) {
-		return errorInfo{
-			message: "unhandled auth error",
-			code:    "unhandled_auth_error",
-			status:  http.StatusInternalServerError,
-		}
+		return unhandledAuthErrorInfo
 	}
-	return authErrorTable[e]
+
+	info := authErrorTable[e]
+
+	if info.message == "" {
+		return unhandledAuthErrorInfo
+	}
+
+	return info
 }

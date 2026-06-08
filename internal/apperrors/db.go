@@ -6,6 +6,9 @@ const (
 	UniqueViolation databaseError = iota
 	NoRowsAffected
 	CacheMiss
+
+	// new errors should be added above this line
+	dbErrorCount
 )
 
 var databaseErrorTable = [...]errorInfo{
@@ -40,11 +43,14 @@ func (e databaseError) Status() int {
 
 func (e databaseError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(databaseErrorTable) {
-		return errorInfo{
-			message: "unhandled database error",
-			code:    "unhandled_database_error",
-			status:  http.StatusInternalServerError,
-		}
+		return unhandledDatabseError
 	}
+
 	return databaseErrorTable[e]
+}
+
+var unhandledDatabseError = errorInfo{
+	message: "unhandled database error",
+	code:    "unhandled_database_error",
+	status:  http.StatusInternalServerError,
 }

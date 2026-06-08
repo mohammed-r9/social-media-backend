@@ -4,6 +4,9 @@ import "net/http"
 
 const (
 	MissingEnvVar envError = iota
+
+	// new errors should be added above this line
+	envErrorCount
 )
 
 var envErrorTable = [...]errorInfo{
@@ -28,11 +31,13 @@ func (e envError) Status() int {
 
 func (e envError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(envErrorTable) {
-		return errorInfo{
-			message: "unhandled env error",
-			code:    "unhandled_env_error",
-			status:  http.StatusInternalServerError,
-		}
+		return unhandledEnvError
 	}
 	return envErrorTable[e]
+}
+
+var unhandledEnvError = errorInfo{
+	message: "unhandled env error",
+	code:    "unhandled_env_error",
+	status:  http.StatusInternalServerError,
 }

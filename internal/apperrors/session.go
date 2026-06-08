@@ -7,6 +7,9 @@ const (
 	SessionRevoked
 	SessionAlreadyExists
 	SessionNotFound
+
+	// new errors should be added above this line
+	sessionErrorCount
 )
 
 var sessionErrorTable = [...]errorInfo{
@@ -46,11 +49,13 @@ func (e sessionError) Status() int {
 
 func (e sessionError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(sessionErrorTable) {
-		return errorInfo{
-			message: "unhandled session error",
-			code:    "unhandled_session_error",
-			status:  http.StatusInternalServerError,
-		}
+		return unhandledSessionError
 	}
 	return sessionErrorTable[e]
+}
+
+var unhandledSessionError = errorInfo{
+	message: "unhandled session error",
+	code:    "unhandled_session_error",
+	status:  http.StatusInternalServerError,
 }

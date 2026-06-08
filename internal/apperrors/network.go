@@ -7,6 +7,9 @@ const (
 	InvalidAuthModeHeader
 	MissingUserClaimsInContext
 	InvalidRequestBody
+
+	// new errors should be added above this line
+	networkErrorCount
 )
 
 var networkErrorTable = [...]errorInfo{
@@ -46,11 +49,13 @@ func (e networkError) Status() int {
 
 func (e networkError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(networkErrorTable) {
-		return errorInfo{
-			message: "unhandled network error",
-			code:    "unhandled_network_error",
-			status:  http.StatusInternalServerError,
-		}
+		return unhandledNetworkError
 	}
 	return networkErrorTable[e]
+}
+
+var unhandledNetworkError = errorInfo{
+	message: "unhandled network error",
+	code:    "unhandled_network_error",
+	status:  http.StatusInternalServerError,
 }

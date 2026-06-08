@@ -186,7 +186,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		StoredHash: dto.Session.RefreshTokenHash,
 	})
 	if !isValid {
-		return "", apperrors.TokenMissmatch
+		return "", apperrors.TokenMismatch
 	}
 
 	if params.CsrfToken != nil {
@@ -196,7 +196,7 @@ func (s *AuthService) RefreshAccessToken(ctx context.Context, params RefreshPara
 		})
 
 		if !isValid {
-			return "", apperrors.TokenMissmatch
+			return "", apperrors.TokenMismatch
 		}
 	}
 

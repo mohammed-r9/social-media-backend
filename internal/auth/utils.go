@@ -21,3 +21,14 @@ func CompareTokenToHash(params CompareTokenToHashParams) bool {
 	tokenHash := HashToken(params.PlainText)
 	return subtle.ConstantTimeCompare([]byte(tokenHash), []byte(params.StoredHash)) == 1
 }
+
+func RedisTokenKeyBuilder(tokenHash string, scope TokenScope) string {
+	switch scope {
+	case ScopePasswordReset:
+		return "prt:" + tokenHash
+	case ScopeEmailVerification:
+		return "evt:" + tokenHash
+	default:
+		return ""
+	}
+}

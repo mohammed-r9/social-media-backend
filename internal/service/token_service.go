@@ -5,7 +5,6 @@ import (
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/repo"
-	"social-media-backend/internal/utils"
 	"time"
 
 	"github.com/google/uuid"
@@ -70,7 +69,7 @@ type VerifyTokenParams struct {
 // VerifyToken verifies the token and returns a uuid of the owner if valid
 func (s *TokenService) VerifyToken(ctx context.Context, params VerifyTokenParams) (uuid.UUID, error) {
 	hash := auth.HashToken(params.TokenPlainText)
-	key := utils.RedisTokenKeyBuilder(hash, params.Scope)
+	key := auth.RedisTokenKeyBuilder(hash, params.Scope)
 	token, err := s.repo.GetToken(ctx, key)
 	if err != nil {
 		return uuid.Nil, err
@@ -98,6 +97,6 @@ type DeleteTokenParams struct {
 
 func (s *TokenService) DeleteToken(ctx context.Context, params DeleteTokenParams) error {
 	hash := auth.HashToken(params.TokenPlainText)
-	key := utils.RedisTokenKeyBuilder(hash, params.Scope)
+	key := auth.RedisTokenKeyBuilder(hash, params.Scope)
 	return s.repo.DeleteToken(ctx, key)
 }

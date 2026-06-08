@@ -8,7 +8,6 @@ import (
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/domain"
-	"social-media-backend/internal/utils"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -68,7 +67,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserP
 		ID:           user.ID,
 		Email:        user.Email,
 		Username:     user.Username,
-		Phone:        utils.NullStringToString(user.Phone),
+		Phone:        textToString(user.Phone),
 		PasswordHash: user.PasswordHash,
 		IsSuspended:  user.IsSuspended,
 		VerifiedAt:   user.VerifiedAt,
@@ -89,7 +88,7 @@ func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain
 		ID:           user.ID,
 		Email:        user.Email,
 		Username:     user.Username,
-		Phone:        utils.NullStringToString(user.Phone),
+		Phone:        textToString(user.Phone),
 		PasswordHash: user.PasswordHash,
 		IsSuspended:  user.IsSuspended,
 		VerifiedAt:   user.VerifiedAt,
@@ -110,16 +109,16 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domai
 		ID:    user.ID,
 		Email: user.Email,
 		Profile: domain.Profile{
-			DisplayName:    utils.NullStringToString(user.DisplayName),
-			Bio:            utils.NullStringToString(user.Bio),
-			AvatarKey:      utils.NullStringToString(user.AvatarKey),
-			Website:        utils.NullStringToString(user.Website),
-			FollowerCount:  utils.PgBigIntToInt64(user.FollowersCount),
-			FollowingCount: utils.PgBigIntToInt64(user.FollowingCount),
-			PostCount:      utils.PgBigIntToInt64(user.PostsCount),
+			DisplayName:    textToString(user.DisplayName),
+			Bio:            textToString(user.Bio),
+			AvatarKey:      textToString(user.AvatarKey),
+			Website:        textToString(user.Website),
+			FollowerCount:  int8ToInt64(user.FollowersCount),
+			FollowingCount: int8ToInt64(user.FollowingCount),
+			PostCount:      int8ToInt64(user.PostsCount),
 		},
 		Username:     user.Username,
-		Phone:        utils.NullStringToString(user.Phone),
+		Phone:        textToString(user.Phone),
 		PasswordHash: user.PasswordHash,
 		IsSuspended:  user.IsSuspended,
 		VerifiedAt:   user.VerifiedAt,
@@ -157,9 +156,9 @@ func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.Upda
 
 	profile, err := r.q.UpdateUserProfile(ctx, db.UpdateUserProfileParams{
 		UserID:      params.UserID,
-		Bio:         utils.ToNullText(params.Bio),
-		DisplayName: utils.ToNullText(params.DisplayName),
-		Website:     utils.ToNullText(params.Website),
+		Bio:         stringPtrToTex(params.Bio),
+		DisplayName: stringPtrToTex(params.DisplayName),
+		Website:     stringPtrToTex(params.Website),
 	})
 
 	if err != nil {
@@ -176,8 +175,8 @@ func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.Upda
 
 	return domain.Profile{
 		DisplayName: profile.DisplayName,
-		Bio:         utils.NullStringToString(profile.Bio),
-		Website:     utils.NullStringToString(profile.Website),
-		AvatarKey:   utils.NullStringToString(profile.AvatarKey),
+		Bio:         textToString(profile.Bio),
+		Website:     textToString(profile.Website),
+		AvatarKey:   textToString(profile.AvatarKey),
 	}, nil
 }

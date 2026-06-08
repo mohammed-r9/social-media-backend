@@ -10,6 +10,9 @@ const (
 	InvalidUsername
 	ProfileNotFound
 	EmailAlreadyTaken
+
+	// new errors should be added above this line
+	userErrorCount
 )
 
 var userErrorTable = [...]errorInfo{
@@ -64,11 +67,13 @@ func (e userError) Status() int {
 
 func (e userError) info() errorInfo {
 	if int(e) < 0 || int(e) >= len(userErrorTable) {
-		return errorInfo{
-			message: "unhandled user error",
-			code:    "unhandled_user_error",
-			status:  http.StatusInternalServerError,
-		}
+		return unhandledUserError
 	}
 	return userErrorTable[e]
+}
+
+var unhandledUserError = errorInfo{
+	message: "unhandled user error",
+	code:    "unhandled_user_error",
+	status:  http.StatusInternalServerError,
 }

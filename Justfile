@@ -36,3 +36,6 @@ db-create name:
 
 swag-gen:
 	@swag init -g main.go -d cmd,internal
+
+test:
+	@go test ./internal/... -v

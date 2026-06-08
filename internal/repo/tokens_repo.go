@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
-	"social-media-backend/internal/utils"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -26,7 +25,7 @@ func (r *RedisRepo) StoreToken(ctx context.Context, params auth.StoreTokenParam)
 		return fmt.Errorf("failed to marshal token: %w", err)
 	}
 
-	key := utils.RedisTokenKeyBuilder(params.Token.Hash, params.Token.Scope)
+	key := auth.RedisTokenKeyBuilder(params.Token.Hash, params.Token.Scope)
 	ttl := params.Token.Ttl
 
 	if err := r.c.Set(ctx, key, tokenBytes, ttl).Err(); err != nil {
