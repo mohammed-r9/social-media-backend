@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"log/slog"
 	"net/http"
@@ -108,22 +109,27 @@ func (a *application) run() error {
 		Handler: a.engine,
 	}
 
-	log.Printf("Server started at %s", a.addr)
+	log.Printf("server started at %s", a.addr)
 
 	serverErr := make(chan error, 1)
+
 	go func() {
-		serverErr <- srv.ListenAndServe()
+		err := srv.ListenAndServe()
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErr <- err
+		}
 	}()
 
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	select {
 	case err := <-serverErr:
 		return err
 
-	case sig := <-quit:
-		log.Printf("shutdown signal received: %v", sig)
+	case <-ctx.Done():
+		log.Println("shutdown signal received")
+		stop()
 		return a.shutdown(srv)
 	}
 }
@@ -135,8 +141,13 @@ func (a *application) shutdown(srv *http.Server) error {
 	log.Println("shutting down server...")
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Printf("http shutdown failed: %v", err)
-		_ = srv.Close()
+		log.Printf("server shutdown failed: %v", err)
+
+		if closeErr := srv.Close(); closeErr != nil {
+			log.Printf("server force close failed: %v", closeErr)
+		}
+
+		return err
 	}
 
 	if a.db != nil {
