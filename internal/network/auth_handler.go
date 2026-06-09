@@ -1,6 +1,7 @@
 package network
 
 import (
+	"context"
 	"errors"
 	"log"
 	"net/http"
@@ -133,6 +134,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		Password:   req.Password,
 		DeviceName: "temp",
 	})
+	if errors.Is(err, context.Canceled) {
+		c.Abort()
+		return
+	}
+
 	if err != nil {
 		_ = c.Error(err)
 		return

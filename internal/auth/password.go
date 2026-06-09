@@ -5,9 +5,9 @@ import (
 )
 
 var defaultParams = &argon2id.Params{
-	Memory:      64 * 1024,
+	Memory:      32 * 1024,
 	Iterations:  3,
-	Parallelism: 4,
+	Parallelism: 2,
 	KeyLength:   32,
 	SaltLength:  16,
 }

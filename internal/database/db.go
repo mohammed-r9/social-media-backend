@@ -13,7 +13,16 @@ func NewDb(connectionStr string) *pgxpool.Pool {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	pool, err := pgxpool.New(ctx, connectionStr)
+	cfg, err := pgxpool.ParseConfig(connectionStr)
+	if err != nil {
+		log.Fatalf("Failed to parse pool config: %v", err)
+	}
+	cfg.MaxConns = 20
+	cfg.MinConns = 5
+	cfg.MaxConnLifetime = time.Hour
+	cfg.MaxConnIdleTime = 30 * time.Minute
+
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		log.Fatalf("Failed to create pool: %v", err)
 	}
