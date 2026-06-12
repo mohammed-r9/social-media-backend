@@ -11,7 +11,7 @@ const (
 	dbErrorCount
 )
 
-var databaseErrorTable = [...]errorInfo{
+var databaseErrorTable = [dbErrorCount]errorInfo{
 	UniqueViolation: {
 		message: "unique violation",
 		code:    "unique_violation",

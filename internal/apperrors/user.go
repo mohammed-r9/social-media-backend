@@ -15,7 +15,7 @@ const (
 	userErrorCount
 )
 
-var userErrorTable = [...]errorInfo{
+var userErrorTable = [userErrorCount]errorInfo{
 	UserNotFound: {
 		message: "user not found",
 		code:    "user_not_found",

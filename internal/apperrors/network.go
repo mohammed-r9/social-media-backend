@@ -12,7 +12,7 @@ const (
 	networkErrorCount
 )
 
-var networkErrorTable = [...]errorInfo{
+var networkErrorTable = [networkErrorCount]errorInfo{
 	MissingAuthModeHeader: {
 		message: "missing X-Auth-Mode header",
 		code:    "missing_auth_mode_header",

@@ -30,18 +30,23 @@ func GenerateAccessToken(user domain.User, key []byte) (string, error) {
 
 // VerifyAccessToken verifies the token and returns the claims if valid
 func VerifyAccessToken(tokenString string, key []byte) (AccessTokenClaims, error) {
-	claims := jwt.MapClaims{}
+	var claims AccessTokenClaims
 
 	token, err := jwt.ParseWithClaims(
 		tokenString,
-		claims,
+		&claims,
 		func(t *jwt.Token) (any, error) {
-			if t.Method != jwt.SigningMethodHS256 {
-				return nil, jwt.ErrSignatureInvalid
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok || t.Header["alg"] != "HS256" {
+				return nil, apperrors.InvalidToken
+			}
+			exp, _ := t.Claims.GetExpirationTime()
+			if exp.Before(time.Now()) {
+				return nil, apperrors.InvalidToken
 			}
 			return key, nil
 		},
 	)
+
 	if err != nil {
 		return AccessTokenClaims{}, err
 	}
@@ -50,28 +55,20 @@ func VerifyAccessToken(tokenString string, key []byte) (AccessTokenClaims, error
 		return AccessTokenClaims{}, apperrors.InvalidToken
 	}
 
-	iss, _ := claims["iss"].(string)
-	if iss != JWT_ISSUER {
+	if claims.Issuer != JWT_ISSUER {
 		return AccessTokenClaims{}, apperrors.InvalidToken
 	}
 
-	sub, ok := claims["sub"].(string)
-	if !ok || sub == "" {
+	if claims.Subject == "" {
 		return AccessTokenClaims{}, apperrors.InvalidToken
 	}
 
-	userID, err := uuid.Parse(sub)
+	userID, err := uuid.Parse(claims.Subject)
 	if err != nil {
 		return AccessTokenClaims{}, apperrors.InvalidToken
 	}
 
-	isVerified, _ := claims["is_email_verified"].(bool)
+	claims.UserID = userID
 
-	username, _ := claims["username"].(string)
-
-	return AccessTokenClaims{
-		UserID:          userID,
-		Username:        username,
-		IsEmailVerified: isVerified,
-	}, nil
+	return claims, nil
 }

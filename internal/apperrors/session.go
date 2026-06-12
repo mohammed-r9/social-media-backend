@@ -12,7 +12,7 @@ const (
 	sessionErrorCount
 )
 
-var sessionErrorTable = [...]errorInfo{
+var sessionErrorTable = [sessionErrorCount]errorInfo{
 	SessionExpired: {
 		message: "session expired",
 		code:    "session_expired",

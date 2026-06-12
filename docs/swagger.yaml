@@ -361,6 +361,42 @@ paths:
       summary: Verify user email
       tags:
       - auth
+  /users/me/:
+    get:
+      consumes:
+      - application/json
+      description: Allows an authenticated user to Get their data using the jwt
+      parameters:
+      - description: Type 'Bearer _JWT_'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      security:
+      - BearerAuth: []
+      summary: Gets the logged in user
+      tags:
+      - users
   /users/me/password:
     put:
       consumes:

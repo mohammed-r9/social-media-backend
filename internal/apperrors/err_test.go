@@ -5,13 +5,6 @@ import (
 )
 
 func TestAuthErrTable(t *testing.T) {
-	if len(authErrorTable) != int(authErrorCount) {
-		t.Fatalf(
-			"auth error table size mismatch: got %d, expected %d",
-			len(authErrorTable),
-			authErrorCount,
-		)
-	}
 	for e := range int(authErrorCount) {
 		info := authErrorTable[e]
 
@@ -29,14 +22,6 @@ func TestAuthErrTable(t *testing.T) {
 }
 
 func TestUserErrTable(t *testing.T) {
-	if len(userErrorTable) != int(userErrorCount) {
-		t.Fatalf(
-			"user error table size mismatch: got %d, expected %d",
-			len(userErrorTable),
-			userErrorCount,
-		)
-	}
-
 	for e := range int(userErrorCount) {
 		info := userErrorTable[e]
 
@@ -54,14 +39,6 @@ func TestUserErrTable(t *testing.T) {
 }
 
 func TestSessionErrTable(t *testing.T) {
-	if len(sessionErrorTable) != int(sessionErrorCount) {
-		t.Fatalf(
-			"session error table size mismatch: got %d, expected %d",
-			len(sessionErrorTable),
-			sessionErrorCount,
-		)
-	}
-
 	for e := range int(sessionErrorCount) {
 		info := sessionErrorTable[e]
 
@@ -79,14 +56,6 @@ func TestSessionErrTable(t *testing.T) {
 }
 
 func TestNetworkErrTable(t *testing.T) {
-	if len(networkErrorTable) != int(networkErrorCount) {
-		t.Fatalf(
-			"network error table size mismatch: got %d, expected %d",
-			len(networkErrorTable),
-			networkErrorCount,
-		)
-	}
-
 	for e := range int(networkErrorCount) {
 		info := networkErrorTable[e]
 
@@ -104,14 +73,6 @@ func TestNetworkErrTable(t *testing.T) {
 }
 
 func TestEnvErrTable(t *testing.T) {
-	if len(envErrorTable) != int(envErrorCount) {
-		t.Fatalf(
-			"env error table size mismatch: got %d, expected %d",
-			len(envErrorTable),
-			envErrorCount,
-		)
-	}
-
 	for e := range int(envErrorCount) {
 		info := envErrorTable[e]
 
@@ -129,14 +90,6 @@ func TestEnvErrTable(t *testing.T) {
 }
 
 func TestDatabaseErrTable(t *testing.T) {
-	if len(databaseErrorTable) != int(dbErrorCount) {
-		t.Fatalf(
-			"database error table size mismatch: got %d, expected %d",
-			len(databaseErrorTable),
-			dbErrorCount,
-		)
-	}
-
 	for e := range int(dbErrorCount) {
 		info := databaseErrorTable[e]
 

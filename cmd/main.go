@@ -17,7 +17,7 @@ import (
 //	@host		localhost:8080
 //	@BasePath	/api/v1
 
-// @securityDefinitions.apikey	BearerAuth
+// @securityDefinitions.apikey  BearerAuth
 // @in							header
 // @name						Authorization
 // @description				Type "Bearer <JWT>"

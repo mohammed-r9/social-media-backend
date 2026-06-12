@@ -22,7 +22,7 @@ const (
 	authErrorCount
 )
 
-var authErrorTable = [...]errorInfo{
+var authErrorTable = [authErrorCount]errorInfo{
 	InvalidCredentials: {
 		message: "invalid credentials",
 		code:    "invalid_credentials",

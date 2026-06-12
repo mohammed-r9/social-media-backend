@@ -3,6 +3,7 @@ package auth
 import (
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -19,9 +20,10 @@ type SessionTokenHashes struct {
 }
 
 type AccessTokenClaims struct {
-	UserID          uuid.UUID
-	Username        string
-	IsEmailVerified bool
+	UserID          uuid.UUID `json:"-"`
+	Username        string    `json:"username"`
+	IsEmailVerified bool      `json:"is_email_verified"`
+	jwt.RegisteredClaims
 }
 
 type ShortLivedToken struct {

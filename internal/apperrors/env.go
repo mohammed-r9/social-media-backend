@@ -9,7 +9,7 @@ const (
 	envErrorCount
 )
 
-var envErrorTable = [...]errorInfo{
+var envErrorTable = [envErrorCount]errorInfo{
 	MissingEnvVar: {
 		message: "missing environment variable",
 		code:    "missing_env_var",
