@@ -1,11 +1,11 @@
-package s3
+package storage
 
 import (
 	"context"
 	"io"
 )
 
-type FileStorage interface {
+type Storage interface {
 	Upload(ctx context.Context, key string, body io.Reader, contentType ContentType) error
 	Delete(ctx context.Context, key string) error
 	GetURL(ctx context.Context, key string) (string, error)
