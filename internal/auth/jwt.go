@@ -39,10 +39,6 @@ func VerifyAccessToken(tokenString string, key []byte) (AccessTokenClaims, error
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok || t.Header["alg"] != "HS256" {
 				return nil, apperrors.InvalidToken
 			}
-			exp, _ := t.Claims.GetExpirationTime()
-			if exp.Before(time.Now()) {
-				return nil, apperrors.InvalidToken
-			}
 			return key, nil
 		},
 	)
@@ -61,6 +57,10 @@ func VerifyAccessToken(tokenString string, key []byte) (AccessTokenClaims, error
 
 	if claims.Subject == "" {
 		return AccessTokenClaims{}, apperrors.InvalidToken
+	}
+
+	if claims.ExpiresAt.Before(time.Now()) {
+		return AccessTokenClaims{}, apperrors.ExpiredToken
 	}
 
 	userID, err := uuid.Parse(claims.Subject)

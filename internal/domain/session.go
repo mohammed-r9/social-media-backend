@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO: I need to find a way to embed some user field here without breaking the design
 type Session struct {
 	ID               string
 	UserID           uuid.UUID

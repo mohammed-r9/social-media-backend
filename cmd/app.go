@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	_ "social-media-backend/docs"
+	"social-media-backend/internal/adapters/s3"
 	"social-media-backend/internal/adapters/sqlc/db"
 	"social-media-backend/internal/cache"
 	"social-media-backend/internal/env"
@@ -72,13 +73,19 @@ func (a *application) mount() {
 	postgresRepo := repo.NewPostgresRepository(a.db, queries)
 	redisRepo := repo.NewRedisRepository(a.rdb)
 	cacheRepo := cache.NewCache(a.rdb)
+	objStorage := s3.NewStorage("main-bucket", s3.S3Config{
+		URL:    a.envCfg.S3_URL,
+		Key:    a.envCfg.S3_KEY,
+		Secret: a.envCfg.S3_SECRET,
+	})
+	_ = objStorage
 
 	// domain repos
 	userRepo := cache.NewChachedUserRepo(postgresRepo, cacheRepo, logger)
 	sessionRepo := cache.NewCachedSessionRepo(postgresRepo, cacheRepo, logger)
 
 	// services
-	userSvc := service.NewUserService(userRepo)
+	userSvc := service.NewUserService(userRepo, objStorage)
 	tokenSvc := service.NewTokenService(redisRepo)
 
 	authSvc := service.NewAuthService(userRepo, sessionRepo, *tokenSvc, logger, a.envCfg.JWTKey)

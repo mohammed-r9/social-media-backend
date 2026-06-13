@@ -12,7 +12,7 @@ func makeUser() domain.User {
 	return domain.User{
 		ID:         uuid.New(),
 		Email:      "mail@mail.com",
-		Username:   "user_name",
+		Username:   "username",
 		VerifiedAt: nil,
 	}
 }

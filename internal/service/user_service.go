@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"social-media-backend/internal/adapters/s3"
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
 	"social-media-backend/internal/domain"
@@ -12,11 +13,13 @@ import (
 
 type UserService struct {
 	repo repo.UserRepository
+	file s3.FileStorage
 }
 
-func NewUserService(repo repo.UserRepository) *UserService {
+func NewUserService(repo repo.UserRepository, fileStorage s3.FileStorage) *UserService {
 	return &UserService{
 		repo: repo,
+		file: fileStorage,
 	}
 }
 
