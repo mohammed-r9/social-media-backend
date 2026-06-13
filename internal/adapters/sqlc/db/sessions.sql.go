@@ -101,3 +101,17 @@ func (q *Queries) GetUserSession(ctx context.Context, id string) (GetUserSession
 	)
 	return i, err
 }
+
+const revokeSession = `-- name: RevokeSession :one
+UPDATE sessions
+	SET revoked_at = CURRENT_TIMESTAMP
+	WHERE id = $1
+RETURNING id
+`
+
+func (q *Queries) RevokeSession(ctx context.Context, id string) (string, error) {
+	row := q.db.QueryRow(ctx, revokeSession, id)
+	var id_2 string
+	err := row.Scan(&id_2)
+	return id_2, err
+}

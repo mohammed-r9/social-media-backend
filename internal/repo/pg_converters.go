@@ -25,3 +25,10 @@ func stringPtrToTex(s *string) pgtype.Text {
 		Valid:  true,
 	}
 }
+
+func stringToTex(s string) pgtype.Text {
+	return pgtype.Text{
+		String: s,
+		Valid:  true,
+	}
+}

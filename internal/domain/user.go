@@ -33,11 +33,12 @@ type User struct {
 type Profile struct {
 	DisplayName    string
 	Bio            string
-	AvatarKey      string
+	AvatarKey      string `json:"-"`
 	Website        string
 	FollowerCount  int64
 	FollowingCount int64
 	PostCount      int64
+	AvatarURL      *string `json:"avatar_url"`
 }
 
 type UpdateProfileParams struct {
@@ -46,4 +47,8 @@ type UpdateProfileParams struct {
 	Bio         *string
 	Website     *string
 	AvatarKey   *string // should implement it after adding s3
+}
+
+func (u *User) UpdateAvatarUrl(url string) {
+	u.Profile.AvatarURL = &url
 }

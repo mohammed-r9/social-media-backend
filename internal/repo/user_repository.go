@@ -21,6 +21,7 @@ type UserRepository interface {
 	UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) (uuid.UUID, error)
 	VerifyUserEmail(ctx context.Context, userID uuid.UUID) (uuid.UUID, error)
 	UpdateSelfProfile(ctx context.Context, params domain.UpdateProfileParams) (domain.Profile, error)
+	UpdateUserAvatar(ctx context.Context, userID uuid.UUID, avatarKey string) error
 }
 
 var _ UserRepository = (*PostgresRepo)(nil)
@@ -148,7 +149,6 @@ func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) (u
 	return userID, err
 }
 
-// TODO: add s3 first to handle the avatar
 func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.UpdateProfileParams) (domain.Profile, error) {
 	if params.UserID == uuid.Nil {
 		return domain.Profile{}, apperrors.InvalidUserID
@@ -179,4 +179,15 @@ func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.Upda
 		Website:     textToString(profile.Website),
 		AvatarKey:   textToString(profile.AvatarKey),
 	}, nil
+}
+
+func (r *PostgresRepo) UpdateUserAvatar(ctx context.Context, userID uuid.UUID, avatarKey string) error {
+	if userID == uuid.Nil {
+		return apperrors.InvalidUserID
+	}
+	_, err := r.q.UpdateUserAvatar(ctx, db.UpdateUserAvatarParams{
+		AvatarKey: stringToTex(avatarKey),
+	})
+	// TODO: add better error handling here
+	return err
 }

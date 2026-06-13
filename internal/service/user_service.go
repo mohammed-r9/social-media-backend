@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"io"
 	"social-media-backend/internal/adapters/storage"
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
@@ -12,14 +13,14 @@ import (
 )
 
 type UserService struct {
-	repo repo.UserRepository
-	file storage.Storage
+	repo        repo.UserRepository
+	fileStorage storage.Storage
 }
 
 func NewUserService(repo repo.UserRepository, fileStorage storage.Storage) *UserService {
 	return &UserService{
-		repo: repo,
-		file: fileStorage,
+		repo:        repo,
+		fileStorage: fileStorage,
 	}
 }
 
@@ -75,5 +76,39 @@ func (s *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (domain
 	if userID == uuid.Nil {
 		return domain.User{}, apperrors.InvalidUserID
 	}
-	return s.repo.GetUserByID(ctx, userID)
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return domain.User{}, apperrors.InvalidUserID
+	}
+
+	if user.Profile.AvatarKey != "" {
+		url, err := s.fileStorage.GetURL(ctx, user.Profile.AvatarKey)
+		if err != nil {
+			return domain.User{}, err
+		}
+		user.UpdateAvatarUrl(url)
+	}
+
+	return user, nil
+}
+
+func (s *UserService) UpdateUserAvatar(ctx context.Context, userID uuid.UUID, img io.Reader) (string, error) {
+	if userID == uuid.Nil {
+		return "", apperrors.InvalidUserID
+	}
+	objKey := storage.GenereateObjectKey()
+	err := s.fileStorage.Upload(ctx, objKey, img, storage.ContentTypeJPEG)
+	if err != nil {
+		return "", err
+	}
+	err = s.repo.UpdateUserAvatar(ctx, userID, objKey)
+	if err != nil {
+		s.fileStorage.Delete(ctx, objKey)
+		return "", err
+	}
+
+	// not a big deal if it fails
+	imgUrl, _ := s.fileStorage.GetURL(ctx, objKey)
+
+	return imgUrl, nil
 }

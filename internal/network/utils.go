@@ -1,6 +1,9 @@
 package network
 
 import (
+	"io"
+	"mime/multipart"
+	"net/http"
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
 
@@ -65,4 +68,44 @@ func getClaims(c *gin.Context) (auth.AccessTokenClaims, bool) {
 
 	claims, ok := v.(auth.AccessTokenClaims)
 	return claims, ok
+}
+
+func ValidateFile(
+	file *multipart.FileHeader,
+	maxSize int64,
+	allowed []string,
+) (string, error) {
+	if file == nil {
+		return "", apperrors.MissingFile
+	}
+
+	if file.Size > maxSize {
+		return "", apperrors.FileTooLarge
+	}
+
+	allowedSet := make(map[string]struct{}, len(allowed))
+	for _, v := range allowed {
+		allowedSet[v] = struct{}{}
+	}
+
+	f, err := file.Open()
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	buf := make([]byte, 512)
+
+	n, err := f.Read(buf)
+	if err != nil && err != io.EOF {
+		return "", err
+	}
+
+	mimeType := http.DetectContentType(buf[:n])
+
+	if _, ok := allowedSet[mimeType]; !ok {
+		return mimeType, apperrors.InvalidMime
+	}
+
+	return mimeType, nil
 }

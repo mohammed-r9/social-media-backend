@@ -23,17 +23,18 @@ func NewRouter(r *gin.RouterGroup, h *Handlers) *Router {
 }
 
 func (r *Router) Register(mw *Middlewares) {
-
 	registerAuthRoutes(r.router, r.handlers.AuthHandler)
 	registerUserRoutes(r.router, r.handlers.UserHandler, mw.Auth)
 }
 
 func registerUserRoutes(r *gin.RouterGroup, h *UserHandler, authMW gin.HandlerFunc) {
 	users := r.Group("/users")
+
 	{
 		users.Use(authMW)
 		users.PUT("me/password", h.UpdateSelfPassword)
-		users.GET("/me", h.GetSelfUser)
+		users.PUT("/me/avatar", h.UpdateSelfAvatar)
+		users.GET("me", h.GetSelfUser)
 	}
 }
 

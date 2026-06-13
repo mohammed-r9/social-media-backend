@@ -11,7 +11,7 @@ type Storage interface {
 	GetURL(ctx context.Context, key string) (string, error)
 }
 
-type ContentType int
+type ContentType uint8
 
 const (
 	ContentTypePNG ContentType = iota
@@ -19,6 +19,8 @@ const (
 	ContentTypeGIF
 	ContentTypeMP4
 	ContentTypeWebM
+
+	ContentTypeUnknown
 )
 
 func (c ContentType) String() string {
@@ -36,5 +38,21 @@ func (c ContentType) String() string {
 
 	default:
 		return "application/octet-stream"
+	}
+}
+func ParseContentType(s string) ContentType {
+	switch s {
+	case "image/png":
+		return ContentTypePNG
+	case "image/jpeg":
+		return ContentTypeJPEG
+	case "image/gif":
+		return ContentTypeGIF
+	case "video/mp4":
+		return ContentTypeMP4
+	case "video/webm":
+		return ContentTypeWebM
+	default:
+		return ContentTypeUnknown
 	}
 }

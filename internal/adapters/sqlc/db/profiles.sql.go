@@ -31,20 +31,42 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (u
 	return user_id, err
 }
 
+const updateUserAvatar = `-- name: UpdateUserAvatar :one
+UPDATE profiles
+SET avatar_key = $1
+WHERE user_id = $2
+RETURNING user_id, avatar_key
+`
+
+type UpdateUserAvatarParams struct {
+	AvatarKey pgtype.Text `json:"avatar_key"`
+	UserID    uuid.UUID   `json:"user_id"`
+}
+
+type UpdateUserAvatarRow struct {
+	UserID    uuid.UUID   `json:"user_id"`
+	AvatarKey pgtype.Text `json:"avatar_key"`
+}
+
+func (q *Queries) UpdateUserAvatar(ctx context.Context, arg UpdateUserAvatarParams) (UpdateUserAvatarRow, error) {
+	row := q.db.QueryRow(ctx, updateUserAvatar, arg.AvatarKey, arg.UserID)
+	var i UpdateUserAvatarRow
+	err := row.Scan(&i.UserID, &i.AvatarKey)
+	return i, err
+}
+
 const updateUserProfile = `-- name: UpdateUserProfile :one
 UPDATE profiles
 SET bio = COALESCE($1, bio),
     display_name = COALESCE($2, display_name),
-    avatar_key = COALESCE($3, avatar_key),
-    website = COALESCE($4, website)
-WHERE user_id = $5
+    website = COALESCE($3, website)
+WHERE user_id = $4
 RETURNING user_id, bio, display_name, avatar_key, website
 `
 
 type UpdateUserProfileParams struct {
 	Bio         pgtype.Text `json:"bio"`
 	DisplayName pgtype.Text `json:"display_name"`
-	AvatarKey   pgtype.Text `json:"avatar_key"`
 	Website     pgtype.Text `json:"website"`
 	UserID      uuid.UUID   `json:"user_id"`
 }
@@ -61,7 +83,6 @@ func (q *Queries) UpdateUserProfile(ctx context.Context, arg UpdateUserProfilePa
 	row := q.db.QueryRow(ctx, updateUserProfile,
 		arg.Bio,
 		arg.DisplayName,
-		arg.AvatarKey,
 		arg.Website,
 		arg.UserID,
 	)

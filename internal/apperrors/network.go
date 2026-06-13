@@ -7,6 +7,9 @@ const (
 	InvalidAuthModeHeader
 	MissingUserClaimsInContext
 	InvalidRequestBody
+	FileTooLarge
+	MissingFile
+	InvalidMime
 
 	// new errors should be added above this line
 	networkErrorCount
@@ -31,6 +34,21 @@ var networkErrorTable = [networkErrorCount]errorInfo{
 	InvalidRequestBody: {
 		message: "invalid request body",
 		code:    "invalid_request_body",
+		status:  http.StatusBadRequest,
+	},
+	FileTooLarge: {
+		message: "file too large",
+		code:    "file_too_large",
+		status:  http.StatusRequestEntityTooLarge,
+	},
+	InvalidMime: {
+		message: "invalid file type",
+		code:    "invalid_file_type",
+		status:  http.StatusUnprocessableEntity,
+	},
+	MissingFile: {
+		message: "missing file",
+		code:    "missing_file",
 		status:  http.StatusBadRequest,
 	},
 }

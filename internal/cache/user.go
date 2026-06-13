@@ -103,3 +103,18 @@ func (c *CachedUserRepo) UpdateSelfProfile(ctx context.Context, params domain.Up
 
 	return profile, nil
 }
+
+func (c *CachedUserRepo) UpdateUserAvatar(ctx context.Context, userID uuid.UUID, avatarKey string) error {
+	err := c.next.UpdateUserAvatar(ctx, userID, avatarKey)
+
+	if err != nil {
+		c.logger.Error("update avatar failed", "err", err, "user_id", userID)
+		return err
+	}
+
+	if err := c.cache.Delete(ctx, keyUserByID(userID.String())); err != nil {
+		c.logger.Warn("cache delete failed", "err", err, "user_id", userID)
+	}
+
+	return nil
+}
