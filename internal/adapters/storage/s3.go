@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -50,10 +51,22 @@ func (s *S3) Upload(
 	body io.Reader,
 	contentType ContentType,
 ) error {
+	var seekableBody io.ReadSeeker
+
+	switch v := body.(type) {
+	case io.ReadSeeker:
+		seekableBody = v
+	default:
+		b, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		seekableBody = bytes.NewReader(b)
+	}
 	_, err := s.client.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),
 		Key:         aws.String(key),
-		Body:        body,
+		Body:        seekableBody,
 		ContentType: aws.String(contentType.String()),
 	})
 

@@ -187,6 +187,7 @@ func (r *PostgresRepo) UpdateUserAvatar(ctx context.Context, userID uuid.UUID, a
 	}
 	_, err := r.q.UpdateUserAvatar(ctx, db.UpdateUserAvatarParams{
 		AvatarKey: stringToTex(avatarKey),
+		UserID:    userID,
 	})
 	// TODO: add better error handling here
 	return err
