@@ -13,7 +13,7 @@ definitions:
     type: object
   domain.Profile:
     properties:
-      avatarKey:
+      avatar_url:
         type: string
       bio:
         type: string
@@ -395,6 +395,48 @@ paths:
       security:
       - BearerAuth: []
       summary: Gets the logged in user
+      tags:
+      - users
+  /users/me/avatar:
+    put:
+      consumes:
+      - multipart/form-data
+      description: Allows an authenticated user to upload and update their profile
+        picture
+      parameters:
+      - description: Bearer JWT token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Avatar image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Avatar updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/network.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/network.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/network.Response'
+      security:
+      - BearerAuth: []
+      summary: Updates the user avatar
       tags:
       - users
   /users/me/password:

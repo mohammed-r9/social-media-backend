@@ -1,10 +1,6 @@
 package network
 
 import (
-	"bytes"
-	"image"
-	"image/jpeg"
-	"image/png"
 	"social-media-backend/internal/adapters/storage"
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/service"
@@ -146,41 +142,7 @@ func (h *UserHandler) UpdateSelfAvatar(c *gin.Context) {
 		return
 	}
 
-	file, err := imageFile.Open()
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	defer file.Close()
-
-	var img image.Image
-
-	switch contentType {
-	case storage.ContentTypeJPEG.String():
-		img, err = jpeg.Decode(file)
-	case storage.ContentTypePNG.String():
-		img, err = png.Decode(file)
-	default:
-		_ = c.Error(apperrors.InvalidMime)
-		return
-	}
-
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	var buf bytes.Buffer
-
-	err = jpeg.Encode(&buf, img, &jpeg.Options{
-		Quality: 85,
-	})
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	imgUrl, err := h.svc.UpdateUserAvatar(c.Request.Context(), userData.UserID, &buf)
+	imgUrl, err := h.svc.UpdateUserAvatar(c.Request.Context(), userData.UserID, imageFile, contentType)
 	if err != nil {
 		_ = c.Error(err)
 		return

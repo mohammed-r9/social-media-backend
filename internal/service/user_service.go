@@ -1,8 +1,12 @@
 package service
 
 import (
+	"bytes"
 	"context"
-	"io"
+	"image"
+	"image/jpeg"
+	"image/png"
+	"mime/multipart"
 	"social-media-backend/internal/adapters/storage"
 	"social-media-backend/internal/apperrors"
 	"social-media-backend/internal/auth"
@@ -92,12 +96,47 @@ func (s *UserService) GetUserByID(ctx context.Context, userID uuid.UUID) (domain
 	return user, nil
 }
 
-func (s *UserService) UpdateUserAvatar(ctx context.Context, userID uuid.UUID, img io.Reader) (string, error) {
+func (s *UserService) UpdateUserAvatar(
+	ctx context.Context,
+	userID uuid.UUID,
+	imageFile *multipart.FileHeader,
+	contentType string) (string, error) {
 	if userID == uuid.Nil {
 		return "", apperrors.InvalidUserID
 	}
+
+	file, err := imageFile.Open()
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	var img image.Image
+
+	switch contentType {
+	case storage.ContentTypeJPEG.String():
+		img, err = jpeg.Decode(file)
+	case storage.ContentTypePNG.String():
+		img, err = png.Decode(file)
+	default:
+		return "", apperrors.InvalidMime
+	}
+
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+
+	err = jpeg.Encode(&buf, img, &jpeg.Options{
+		Quality: 85,
+	})
+	if err != nil {
+		return "", err
+	}
 	objKey := storage.GenereateObjectKey()
-	err := s.fileStorage.Upload(ctx, objKey, img, storage.ContentTypeJPEG)
+
+	err = s.fileStorage.Upload(ctx, objKey, &buf, storage.ContentTypeJPEG)
 	if err != nil {
 		return "", err
 	}

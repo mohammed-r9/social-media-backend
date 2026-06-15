@@ -410,6 +410,69 @@
                 }
             }
         },
+        "/users/me/avatar": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Allows an authenticated user to upload and update their profile picture",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Updates the user avatar",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Avatar image file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Avatar updated successfully",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/network.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/users/me/password": {
             "put": {
                 "security": [
@@ -497,7 +560,7 @@
         "domain.Profile": {
             "type": "object",
             "properties": {
-                "avatarKey": {
+                "avatar_url": {
                     "type": "string"
                 },
                 "bio": {
