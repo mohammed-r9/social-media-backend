@@ -16,7 +16,7 @@ func GenerateAccessToken(user domain.User, key []byte) (string, error) {
 	claims := jwt.MapClaims{
 		"iss": JWT_ISSUER,
 		"iat": now.Unix(),
-		"exp": now.Add(ACCESS_TOKEN_TTL).Unix(),
+		"exp": now.Add(AccessTokenTTL()).Unix(),
 		"sub": user.ID.String(),
 
 		"is_email_verified": user.VerifiedAt != nil,

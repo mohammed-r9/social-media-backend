@@ -7,13 +7,13 @@ import (
 )
 
 type PostgresRepo struct {
-	q  *db.Queries
-	db *pgxpool.Pool
+	queries *db.Queries
+	db      *pgxpool.Pool
 }
 
 func NewPostgresRepository(db *pgxpool.Pool, q *db.Queries) *PostgresRepo {
 	return &PostgresRepo{
-		q:  q,
-		db: db,
+		queries: q,
+		db:      db,
 	}
 }

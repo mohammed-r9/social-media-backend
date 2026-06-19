@@ -20,7 +20,7 @@ type SessionsRepository interface {
 var _ SessionsRepository = (*PostgresRepo)(nil)
 
 func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSessionParams) (domain.Session, error) {
-	session, err := r.q.CreateSession(ctx, db.CreateSessionParams{
+	session, err := r.queries.CreateSession(ctx, db.CreateSessionParams{
 		ID:               params.ID,
 		UserID:           params.UserID,
 		RefreshTokenHash: params.RefreshTokenHash,
@@ -56,7 +56,7 @@ func (r *PostgresRepo) CreateSession(ctx context.Context, params domain.CreateSe
 }
 
 func (r *PostgresRepo) GetUserSession(ctx context.Context, sessionID string) (UserSessionDTO, error) {
-	session, err := r.q.GetUserSession(ctx, sessionID)
+	session, err := r.queries.GetUserSession(ctx, sessionID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return UserSessionDTO{}, apperrors.SessionNotFound

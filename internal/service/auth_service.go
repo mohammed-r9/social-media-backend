@@ -213,7 +213,7 @@ func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
 		TokenPlainText: token,
-		Scope:          auth.ScopeEmailVerification,
+		Scope:          auth.SCOPE_EMAIL_VERIFICATION,
 	})
 	if err != nil {
 		return err
@@ -226,7 +226,7 @@ func (s *AuthService) VerifyUserEmail(ctx context.Context, token string) error {
 
 	return s.tokenService.DeleteToken(ctx, DeleteTokenParams{
 		TokenPlainText: token,
-		Scope:          auth.ScopeEmailVerification,
+		Scope:          auth.SCOPE_EMAIL_VERIFICATION,
 	})
 }
 
@@ -242,7 +242,7 @@ func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPas
 
 	userID, err := s.tokenService.VerifyToken(ctx, VerifyTokenParams{
 		TokenPlainText: params.Token,
-		Scope:          auth.ScopePasswordReset,
+		Scope:          auth.SCOPE_PASSWORD_RESET,
 	})
 	if err != nil {
 		return err
@@ -263,7 +263,7 @@ func (s *AuthService) ResetUserPassword(ctx context.Context, params ResetUserPas
 
 	return s.tokenService.DeleteToken(ctx, DeleteTokenParams{
 		TokenPlainText: params.Token,
-		Scope:          auth.ScopePasswordReset,
+		Scope:          auth.SCOPE_PASSWORD_RESET,
 	})
 }
 

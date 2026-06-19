@@ -34,7 +34,7 @@ func (r *PostgresRepo) CreateUser(ctx context.Context, params domain.CreateUserP
 
 	defer tx.Rollback(ctx)
 
-	qtx := r.q.WithTx(tx)
+	qtx := r.queries.WithTx(tx)
 
 	user, err := qtx.CreateUser(ctx, db.CreateUserParams{
 		ID:           params.ID,
@@ -80,7 +80,7 @@ func (r *PostgresRepo) GetUserByEmail(ctx context.Context, email string) (domain
 		return domain.User{}, apperrors.InvalidUserEmail
 	}
 
-	user, err := r.q.GetUserByEmail(ctx, email)
+	user, err := r.queries.GetUserByEmail(ctx, email)
 	if errors.Is(err, sql.ErrNoRows) {
 		return domain.User{}, apperrors.UserNotFound
 	}
@@ -101,7 +101,7 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domai
 		return domain.User{}, apperrors.InvalidUserID
 	}
 
-	user, err := r.q.GetUserByID(ctx, userID)
+	user, err := r.queries.GetUserByID(ctx, userID)
 	if errors.Is(err, sql.ErrNoRows) {
 		return domain.User{}, apperrors.UserNotFound
 	}
@@ -127,7 +127,7 @@ func (r *PostgresRepo) GetUserByID(ctx context.Context, userID uuid.UUID) (domai
 }
 
 func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.UpdatePasswordParams) (uuid.UUID, error) {
-	userID, err := r.q.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
+	userID, err := r.queries.UpdateUserPassword(ctx, db.UpdateUserPasswordParams{
 		ID:           params.ID,
 		PasswordHash: params.PasswordHash,
 	})
@@ -140,7 +140,7 @@ func (r *PostgresRepo) UpdateUserPassword(ctx context.Context, params domain.Upd
 }
 
 func (r *PostgresRepo) VerifyUserEmail(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
-	userID, err := r.q.VerifyUserEmail(ctx, userID)
+	userID, err := r.queries.VerifyUserEmail(ctx, userID)
 
 	if userID == uuid.Nil {
 		return uuid.Nil, apperrors.NoRowsAffected
@@ -154,7 +154,7 @@ func (r *PostgresRepo) UpdateSelfProfile(ctx context.Context, params domain.Upda
 		return domain.Profile{}, apperrors.InvalidUserID
 	}
 
-	profile, err := r.q.UpdateUserProfile(ctx, db.UpdateUserProfileParams{
+	profile, err := r.queries.UpdateUserProfile(ctx, db.UpdateUserProfileParams{
 		UserID:      params.UserID,
 		Bio:         stringPtrToTex(params.Bio),
 		DisplayName: stringPtrToTex(params.DisplayName),
@@ -185,7 +185,7 @@ func (r *PostgresRepo) UpdateUserAvatar(ctx context.Context, userID uuid.UUID, a
 	if userID == uuid.Nil {
 		return apperrors.InvalidUserID
 	}
-	_, err := r.q.UpdateUserAvatar(ctx, db.UpdateUserAvatarParams{
+	_, err := r.queries.UpdateUserAvatar(ctx, db.UpdateUserAvatarParams{
 		AvatarKey: stringToTex(avatarKey),
 		UserID:    userID,
 	})

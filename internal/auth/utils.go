@@ -24,9 +24,9 @@ func CompareTokenToHash(params CompareTokenToHashParams) bool {
 
 func RedisTokenKeyBuilder(tokenHash string, scope TokenScope) string {
 	switch scope {
-	case ScopePasswordReset:
+	case SCOPE_PASSWORD_RESET:
 		return "prt:" + tokenHash
-	case ScopeEmailVerification:
+	case SCOPE_EMAIL_VERIFICATION:
 		return "evt:" + tokenHash
 	default:
 		return ""

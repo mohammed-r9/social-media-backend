@@ -29,11 +29,11 @@ func newShortLivedToken(userID uuid.UUID, scope TokenScope, ttl time.Duration) S
 }
 
 func GenerateEmailVerificationToken(userID uuid.UUID) ShortLivedToken {
-	return newShortLivedToken(userID, ScopeEmailVerification, EMAIL_VERIFICATION_TTL)
+	return newShortLivedToken(userID, SCOPE_EMAIL_VERIFICATION, EMAIL_VERIFICATION_TTL)
 }
 
 func GeneratePasswordResetToken(userID uuid.UUID) ShortLivedToken {
-	return newShortLivedToken(userID, ScopePasswordReset, PASSWORD_RESET_TTL)
+	return newShortLivedToken(userID, SCOPE_PASSWORD_RESET, PASSWORD_RESET_TTL)
 }
 
 func GenerateSessionID() string {
